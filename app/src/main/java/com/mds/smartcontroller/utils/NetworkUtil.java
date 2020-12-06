@@ -1,0 +1,12 @@
+package com.mds.smartcontroller.utils;
+
+public class NetworkUtil {
+    public static final String SOCK_CMD_FILE_CLIENT_TO_SERVER = "0";
+    public static final String SOCK_CMD_LIST_SERVER_TO_CLIENT = "1";
+    public static final String SOCK_CMD_DELETE_CLIENT_TO_SERVER = "2";
+    public static final String SOCK_CMD_PLAY_CLIENT_TO_SERVER = "3";
+    public static final String SOCK_CMD_SENSOR_SERVER_TO_CLIENT = "4";
+    public static final String SOCK_CMD_END = "-1";
+    public static final int SERVER_PORT = 3000;
+    public static final String SERVER_IP = "192.168.0.210";
+}

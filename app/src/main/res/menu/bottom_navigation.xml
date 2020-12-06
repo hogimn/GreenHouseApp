@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_baseline_home_24"
+        android:title="@string/fragment_home_title" />
+    <item
+        android:id="@+id/nav_history"
+        android:icon="@drawable/ic_baseline_history_24"
+        android:title="@string/fragment_history_title" />
+    <item
+        android:id="@+id/nav_music"
+        android:icon="@drawable/ic_baseline_library_music_24"
+        android:title="@string/fragment_music_title" />
+    <item
+        android:id="@+id/nav_camera"
+        android:icon="@drawable/ic_baseline_camera_alt_24"
+        android:title="@string/fragment_camera_title" />
+</menu>

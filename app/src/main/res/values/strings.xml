@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">SmartController</string>
+    <string name="fragment_history_description">Sensor Data History</string>
+    <string name="fragment_home_description">Control your device</string>
+    <string name="fragment_music_description">Music Player</string>
+    <string name="controll_water">Watering</string>
+    <string name="controll_drain">Draining</string>
+    <string name="controll_led">Turning On</string>
+    <string name="controll_fan">Fanning</string>
+    <string name="selected_file">Selected File</string>
+    <string name="btn_transfer">Transfer</string>
+    <string name="file_chooser">Choose File</string>
+    <string name="image_icon">Image Icon</string>
+    <string name="fragment_home_title">Home</string>
+    <string name="fragment_history_title">History</string>
+    <string name="fragment_music_title">music</string>
+    <string name="fragment_camera_title">camera</string>
+</resources>
