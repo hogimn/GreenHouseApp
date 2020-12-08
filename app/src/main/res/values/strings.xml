@@ -3,6 +3,7 @@
     <string name="fragment_history_description">Sensor Data History</string>
     <string name="fragment_home_description">Control your device</string>
     <string name="fragment_music_description">Music Player</string>
+    <string name="fragment_camera_description">Camera Viewer</string>
     <string name="controll_water">Watering</string>
     <string name="controll_drain">Draining</string>
     <string name="controll_led">Turning On</string>
