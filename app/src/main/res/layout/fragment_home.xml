@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#CFC1F1">
+    android:background="@drawable/fragment_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -77,6 +77,7 @@
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="0dp"
                 android:layout_weight="1"
+                app:cardBackgroundColor="#99d9ea"
                 app:cardElevation="5dp">
 
                 <RelativeLayout
@@ -94,6 +95,7 @@
                         android:layout_marginTop="10dp"
                         android:fontFamily="@font/baloo"
                         android:text="@string/controll_water"
+                        android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <ImageView
@@ -118,6 +120,7 @@
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="0dp"
                 android:layout_weight="1"
+                app:cardBackgroundColor="#99d9ea"
                 app:cardElevation="5dp">
 
                 <RelativeLayout
@@ -135,6 +138,7 @@
                         android:layout_marginTop="10dp"
                         android:fontFamily="@font/baloo"
                         android:text="@string/controll_drain"
+                        android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <ImageView
@@ -173,6 +177,7 @@
                 android:layout_marginRight="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_weight="1"
+                app:cardBackgroundColor="#99d9ea"
                 app:cardElevation="5dp">
 
                 <RelativeLayout
@@ -190,6 +195,7 @@
                         android:layout_marginTop="10dp"
                         android:fontFamily="@font/baloo"
                         android:text="@string/controll_led"
+                        android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <ImageView
@@ -215,6 +221,7 @@
                 android:layout_marginBottom="5dp"
                 android:layout_weight="1"
                 app:cardElevation="5dp"
+                app:cardBackgroundColor="#99d9ea"
                 app:cardUseCompatPadding="false">
 
                 <RelativeLayout
@@ -232,6 +239,7 @@
                         android:layout_marginTop="10dp"
                         android:fontFamily="@font/baloo"
                         android:text="@string/controll_fan"
+                        android:textColor="@color/white"
                         android:textSize="20sp" />
 
                     <ImageView

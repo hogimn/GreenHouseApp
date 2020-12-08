@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#CFC1F1">
+    android:background="@drawable/fragment_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -66,7 +66,7 @@
                 android:id="@+id/temp_graph"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
-                android:background="@color/temp_graph_color"
+                android:background="#00000000"
                 android:orientation="vertical" />
 
             <LinearLayout
@@ -74,7 +74,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:layout_marginTop="10dp"
-                android:background="@color/humi_graph_color"
+                android:background="#00000000"
                 android:orientation="vertical" />
 
         </LinearLayout>

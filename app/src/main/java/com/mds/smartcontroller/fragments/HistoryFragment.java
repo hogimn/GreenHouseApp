@@ -3,8 +3,6 @@ package com.mds.smartcontroller.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,10 +12,8 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.Viewport;
@@ -34,7 +30,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Random;
 
 public class HistoryFragment extends Fragment {
     /* LineGraphSeries to record each sensor data */
@@ -54,6 +49,8 @@ public class HistoryFragment extends Fragment {
 
     /* current Activity where the fragment belongs to */
     private Activity mActivity;
+
+    private final int WHITE = Color.rgb(255,255,255);
 
     @Nullable
     @Override
@@ -177,13 +174,21 @@ public class HistoryFragment extends Fragment {
 
         mTempGraph.setTitle("Temparature");
         mTempGraph.setHorizontalScrollBarEnabled(true);
+        mTempGraph.setTitleColor(WHITE);
         tempGridLabelRenderer = mTempGraph.getGridLabelRenderer();
         tempGridLabelRenderer.setHorizontalLabelsVisible(false);
+        tempGridLabelRenderer.setGridColor(WHITE);
+        tempGridLabelRenderer.setVerticalLabelsColor(WHITE);
+        tempGridLabelRenderer.setHorizontalLabelsColor(WHITE);
 
         mHumiGraph.setTitle("Humidity");
         mHumiGraph.setHorizontalScrollBarEnabled(true);
+        mHumiGraph.setTitleColor(WHITE);
         humiGridLabelRenderer = mHumiGraph.getGridLabelRenderer();
         humiGridLabelRenderer.setHorizontalLabelsVisible(false);
+        humiGridLabelRenderer.setGridColor(WHITE);
+        humiGridLabelRenderer.setVerticalLabelsColor(WHITE);
+        humiGridLabelRenderer.setHorizontalLabelsColor(WHITE);
 
         /* temperature ranges 0 ~ 50 celsius degree */
         Viewport vp_temp = mTempGraph.getViewport();
@@ -202,8 +207,8 @@ public class HistoryFragment extends Fragment {
         mHumiSeries = new LineGraphSeries<DataPoint>();
         mHumiGraph.addSeries(mHumiSeries);
 
-        mTempSeries.setColor(Color.rgb(255, 0, 180));
-        mHumiSeries.setColor(Color.rgb(255, 0, 180));
+        mTempSeries.setColor(Color.rgb(56, 163, 226));
+        mHumiSeries.setColor(Color.rgb(56, 163, 226));
 
         LinearLayout layout_temp = v.findViewById(R.id.temp_graph);
         layout_temp.addView(mTempGraph);
