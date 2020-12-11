@@ -2,6 +2,7 @@ package com.mds.smartcontroller.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +21,7 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.mds.smartcontroller.R;
+import com.mds.smartcontroller.activities.HistoryActivity;
 import com.mds.smartcontroller.utils.NetworkUtil;
 
 import java.io.BufferedReader;
@@ -74,7 +76,6 @@ public class HistoryFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mActivity = null;
-        mThreadTempHumi.interrupt();
     }
 
     private void getSensorData() {
@@ -215,5 +216,22 @@ public class HistoryFragment extends Fragment {
 
         LinearLayout layout_humi = v.findViewById(R.id.humi_graph);
         layout_humi.addView(mHumiGraph);
+
+        mTempGraph.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), HistoryActivity.class);
+                intent.putExtra("sensor", "temp");
+                startActivity(intent);
+            }
+        });
+        mHumiGraph.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), HistoryActivity.class);
+                intent.putExtra("sensor", "humi");
+                startActivity(intent);
+            }
+        });
     }
 }
