@@ -27,14 +27,29 @@ import java.net.UnknownHostException;
 
 public class HistoryActivity extends Activity {
 
+    /* graph to show accumulated sensor data */
     private GraphView mSensorGraph;
+
+    /* data series to be added by server */
     private LineGraphSeries<DataPoint> mSensorSeries;
+
+    /* get added by 1 whenever new DataPoint is appended to mSensorSeries */
     private int mLastX = 0;
+
+    /* sensor name */
     private String mSensor;
+
+    /* thread to receive database data from server */
     private Thread mGraphThread;
+
+    /* current Activity */
     private Activity mActivity;
+
+    /* maximum DataPoints to show in a screen */
     private final int mMaxDataPoints = 100000;
+
     private final int WHITE = Color.rgb(255,255,255);
+
     private final String TAG = this.getClass().getName();
 
     @Override
@@ -42,7 +57,10 @@ public class HistoryActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
+        /* receive interActivity data */
         mSensor = getIntent().getStringExtra("sensor");
+
+        /* save current Activity */
         mActivity = HistoryActivity.this;
 
         initializeView();
@@ -81,20 +99,21 @@ public class HistoryActivity extends Activity {
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
-                    /* receive humid sensor (2byte) data */
+                    /* receive humid sensor (2 bytes) data */
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
-                        /* first receive humidity data */
-                        String strHumi = br.readLine();
+                        /* receive sensor data */
+                        String sensorData = br.readLine();
 
                         /* update UI */
                         try {
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    /* append to mSensorSeries */
                                     mSensorSeries.appendData(new DataPoint(mLastX++,
-                                                    Integer.parseInt(strHumi)),
+                                                    Integer.parseInt(sensorData)),
                                             true,
                                             mMaxDataPoints);
                                     mSensorGraph.onDataChanged(true,
@@ -123,11 +142,6 @@ public class HistoryActivity extends Activity {
         mGraphThread.start();
     }
 
-    private void getHumiData()
-    {
-
-    }
-
     private void initializeView() {
 
         GridLabelRenderer sensorGridLabelRenderer;
@@ -144,7 +158,18 @@ public class HistoryActivity extends Activity {
 
         Viewport vp_sensor = mSensorGraph.getViewport();
         vp_sensor.setYAxisBoundsManual(true);
+        vp_sensor.setXAxisBoundsManual(true);
+
+        /* scrollable in x-axis */
         vp_sensor.setScrollable(true);
+        /* zoom in/out */
+        vp_sensor.setScalable(true);
+
+        /* show only 1000 DataPoints at a time */
+        vp_sensor.setMinX(0);
+        vp_sensor.setMaxX(1000);
+
+        /* set Y range according to selected sensor */
         if (mSensor.equals("temp")) {
             vp_sensor.setMinY(0);
             vp_sensor.setMaxY(50);
@@ -156,7 +181,8 @@ public class HistoryActivity extends Activity {
         mSensorSeries = new LineGraphSeries<DataPoint>();
         mSensorGraph.addSeries(mSensorSeries);
 
-        mSensorSeries.setColor(Color.rgb(56, 163, 226));
+        /* set color of graph */
+        mSensorSeries.setColor(Color.rgb(0xe9, 0x1e, 0x63));
 
         LinearLayout layout_sensor = findViewById(R.id.sensor_graph);
         layout_sensor.addView(mSensorGraph);
