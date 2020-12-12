@@ -208,8 +208,8 @@ public class HistoryFragment extends Fragment {
         mHumiSeries = new LineGraphSeries<DataPoint>();
         mHumiGraph.addSeries(mHumiSeries);
 
-        mTempSeries.setColor(Color.rgb(56, 163, 226));
-        mHumiSeries.setColor(Color.rgb(56, 163, 226));
+        mTempSeries.setColor(Color.rgb(0xe9, 0x1e, 0x63));
+        mHumiSeries.setColor(Color.rgb(0xe9, 0x1e, 0x63));
 
         LinearLayout layout_temp = v.findViewById(R.id.temp_graph);
         layout_temp.addView(mTempGraph);
