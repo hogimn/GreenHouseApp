@@ -45,6 +45,7 @@ public class HomeFragment extends Fragment {
     private CardView mCVLED;
     private CardView mCVFan;
     private CardView mCVHumidifier;
+    private CardView mCVDryer;
 
     /* ImageView to show the state in which each device is */
     private ImageView mIVWater;
@@ -52,13 +53,16 @@ public class HomeFragment extends Fragment {
     private ImageView mIVLED;
     private ImageView mIVFan;
     private ImageView mIVHumidifier;
+    private ImageView mIVDryer;
 
     /* current mode */
     private int mCurrentMode;
 
+    /* mode AUTO/MANUAL */
     private final int MODE_AUTO   = 0;
     private final int MODE_MANUAL = 1;
 
+    /* functional device state */
     private final int STATE_LED_ON = 1;
     private final int STATE_LED_OFF = 2;
     private final int STATE_FAN_ON = 3;
@@ -69,13 +73,16 @@ public class HomeFragment extends Fragment {
     private final int STATE_SOLENOID_CLOSE = 8;
     private final int STATE_HUMIDIFIER_ON = 9;
     private final int STATE_HUMIDIFIER_OFF = 10;
+    private final int STATE_DRYER_ON = 11;
+    private final int STATE_DRYER_OFF = 12;
 
+    /* current device state */
     private volatile int mStateLED;
     private volatile int mStateFan;
     private volatile int mStateDrain;
     private volatile int mStateSolenoid;
     private volatile int mStateHumidifier;
-
+    private volatile int mStateDryer;
 
     private final String TAG = getClass().getName();
 
@@ -118,12 +125,14 @@ public class HomeFragment extends Fragment {
         mCVLED = v.findViewById(R.id.cv_led);
         mCVFan = v.findViewById(R.id.cv_fan);
         mCVHumidifier = v.findViewById(R.id.cv_humidifier);
+        mCVDryer = v.findViewById(R.id.cv_dryer);
 
         mIVWater = v.findViewById(R.id.iv_water);
         mIVDrain = v.findViewById(R.id.iv_drain);
         mIVLED = v.findViewById(R.id.iv_led);
         mIVFan = v.findViewById(R.id.iv_fan);
         mIVHumidifier = v.findViewById(R.id.iv_humidifier);
+        mIVDryer = v.findViewById(R.id.iv_dryer);
 
         /* when user clicks button, mode is toggled */
         mBtnMode.setOnClickListener(new View.OnClickListener() {
@@ -137,9 +146,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mStateSolenoid == STATE_SOLENOID_OPEN) {
-                    asyncStateChange(STATE_SOLENOID_CLOSE);
+                    asyncChangeState(STATE_SOLENOID_CLOSE);
                 } else if (mStateSolenoid == STATE_SOLENOID_CLOSE) {
-                    asyncStateChange(STATE_SOLENOID_OPEN);
+                    asyncChangeState(STATE_SOLENOID_OPEN);
                 }
             }
         });
@@ -148,9 +157,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mStateDrain == STATE_DRAIN_OPEN) {
-                    asyncStateChange(STATE_DRAIN_CLOSE);
+                    asyncChangeState(STATE_DRAIN_CLOSE);
                 } else if (mStateDrain == STATE_DRAIN_CLOSE) {
-                    asyncStateChange(STATE_DRAIN_OPEN);
+                    asyncChangeState(STATE_DRAIN_OPEN);
                 }
             }
         });
@@ -159,9 +168,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mStateLED == STATE_LED_ON) {
-                    asyncStateChange(STATE_LED_OFF);
+                    asyncChangeState(STATE_LED_OFF);
                 } else if (mStateLED == STATE_LED_OFF) {
-                    asyncStateChange(STATE_LED_ON);
+                    asyncChangeState(STATE_LED_ON);
                 }
             }
         });
@@ -170,9 +179,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mStateFan == STATE_FAN_ON) {
-                    asyncStateChange(STATE_FAN_OFF);
+                    asyncChangeState(STATE_FAN_OFF);
                 } else if (mStateFan == STATE_FAN_OFF) {
-                    asyncStateChange(STATE_FAN_ON);
+                    asyncChangeState(STATE_FAN_ON);
                 }
             }
         });
@@ -181,23 +190,33 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mStateHumidifier == STATE_HUMIDIFIER_ON) {
-                    asyncStateChange(STATE_HUMIDIFIER_OFF);
+                    asyncChangeState(STATE_HUMIDIFIER_OFF);
                 }
                 else if (mStateHumidifier == STATE_HUMIDIFIER_OFF) {
-                    asyncStateChange(STATE_HUMIDIFIER_ON);
+                    asyncChangeState(STATE_HUMIDIFIER_ON);
+                }
+            }
+        });
+
+        mCVDryer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mStateDryer == STATE_DRYER_ON) {
+                    asyncChangeState(STATE_DRYER_OFF);
+                }
+                else if (mStateDryer == STATE_DRYER_OFF) {
+                    asyncChangeState(STATE_DRYER_ON);
                 }
             }
         });
     }
 
-    private void asyncStateChange(int cmd)
+    private void asyncChangeState(int cmd)
     {
         Thread threadStateChange = new Thread(new Runnable() {
             @Override
             public void run() {
                 OutputStream os;
-                InputStream is;
-                BufferedReader br;
                 byte[] sendBytes;
 
                 Socket sock = new Socket();
@@ -270,13 +289,14 @@ public class HomeFragment extends Fragment {
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
-                        int StateLED = Integer.parseInt(br.readLine());
-                        int StateFan = Integer.parseInt(br.readLine());
-                        int StateSolenoid = Integer.parseInt(br.readLine());
-                        int StateDrain = Integer.parseInt(br.readLine());
-                        int StateHumidifier = Integer.parseInt(br.readLine());
-
                         try {
+                            int StateLED = Integer.parseInt(br.readLine());
+                            int StateFan = Integer.parseInt(br.readLine());
+                            int StateSolenoid = Integer.parseInt(br.readLine());
+                            int StateDrain = Integer.parseInt(br.readLine());
+                            int StateHumidifier = Integer.parseInt(br.readLine());
+                            int StateDryer = Integer.parseInt(br.readLine());
+
                             /* update UI */
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
@@ -350,9 +370,25 @@ public class HomeFragment extends Fragment {
 
                                         mStateHumidifier = STATE_HUMIDIFIER_OFF;
                                     }
+
+                                    if (StateDryer == STATE_DRYER_ON) {
+                                        mCVDryer.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                                R.color.card_background_color_active));
+                                        mIVDryer.setImageResource(R.drawable.active_dryer);
+
+                                        mStateDryer = STATE_DRYER_ON;
+                                    } else if (StateDryer == STATE_DRYER_OFF) {
+                                        mCVDryer.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                                R.color.card_background_color_deactive));
+                                        mIVDryer.setImageResource(R.drawable.dryer);
+
+                                        mStateDryer = STATE_DRYER_OFF;
+                                    }
                                 }
                             });
                         } catch (NullPointerException e) {
+                            break;
+                        } catch (NumberFormatException e) {
                             break;
                         }
                     }
@@ -401,14 +437,13 @@ public class HomeFragment extends Fragment {
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
+                        try {
+                            int mode = Integer.parseInt(br.readLine());
 
-                        int mode = Integer.parseInt(br.readLine());
-
-                        /* update mCurrentMode */
-                        mCurrentMode = mode;
+                            /* update mCurrentMode */
+                            mCurrentMode = mode;
 
                         /* update UI */
-                        try {
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -423,6 +458,8 @@ public class HomeFragment extends Fragment {
                                 }
                             });
                         } catch (NullPointerException e) {
+                            break;
+                        } catch (NumberFormatException e) {
                             break;
                         }
                     }
@@ -473,10 +510,9 @@ public class HomeFragment extends Fragment {
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
-
-                        int mode = Integer.parseInt(br.readLine());
-
                         try {
+                            int mode = Integer.parseInt(br.readLine());
+
                             /* update UI */
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
@@ -489,6 +525,8 @@ public class HomeFragment extends Fragment {
                                 }
                             });
                         } catch (NullPointerException e) {
+                            break;
+                        } catch (NumberFormatException e) {
                             break;
                         }
                     }
