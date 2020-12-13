@@ -80,9 +80,6 @@ public class MusicFragment extends ListFragment {
     /* container for music list */
     private ArrayList<MusicItem> mMusicItemList;
 
-    /* indicates whether music is currently playing or not */
-    private int mStopOrPlay;
-
     /* currently playing music */
     private MusicItem currentMusic;
 
