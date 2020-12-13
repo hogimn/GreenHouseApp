@@ -227,7 +227,7 @@ public class HomeFragment extends Fragment {
                                                 R.color.card_background_color_deactive));
                                         mIVWater.setImageResource(R.drawable.droplet);
                                     }
-                                    if (strStateDrain.equals(STATE_DRAIN_CLOSE)) {
+                                    if (strStateDrain.equals(STATE_DRAIN_OPEN)) {
                                         mCVDrain.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_active));
                                         mIVDrain.setImageResource(R.drawable.active_drainage);
