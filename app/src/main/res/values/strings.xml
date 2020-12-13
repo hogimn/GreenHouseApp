@@ -4,10 +4,11 @@
     <string name="fragment_home_description">Control your device</string>
     <string name="fragment_music_description">Music Player</string>
     <string name="fragment_camera_description">Camera Viewer</string>
-    <string name="controll_water">Watering</string>
-    <string name="controll_drain">Draining</string>
-    <string name="controll_led">Turning On</string>
-    <string name="controll_fan">Fanning</string>
+    <string name="control_water">Water</string>
+    <string name="control_drain">Drain</string>
+    <string name="control_led">LED</string>
+    <string name="control_fan">Fan</string>
+    <string name="control_humidifier">Humidifier</string>
     <string name="selected_file">Selected File</string>
     <string name="btn_transfer">Transfer</string>
     <string name="file_chooser">Choose File</string>
