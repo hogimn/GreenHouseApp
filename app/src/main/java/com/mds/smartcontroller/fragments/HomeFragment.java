@@ -54,21 +54,28 @@ public class HomeFragment extends Fragment {
     private ImageView mIVHumidifier;
 
     /* current mode */
-    private String mCurrentMode;
+    private int mCurrentMode;
 
-    private final String MODE_AUTO   = "0";
-    private final String MODE_MANUAL = "1";
+    private final int MODE_AUTO   = 0;
+    private final int MODE_MANUAL = 1;
 
-    private final String STATE_LED_ON = "1";
-    private final String STATE_LED_OFF = "2";
-    private final String STATE_FAN_ON = "3";
-    private final String STATE_FAN_OFF = "4";
-    private final String STATE_DRAIN_OPEN = "5";
-    private final String STATE_DRAIN_CLOSE = "6";
-    private final String STATE_SOLENOID_OPEN = "7";
-    private final String STATE_SOLENOID_CLOSE = "8";
-    private final String STATE_HUMIDIFIER_ON = "9";
-    private final String STATE_HUMIDIFIER_OFF = "10";
+    private final int STATE_LED_ON = 1;
+    private final int STATE_LED_OFF = 2;
+    private final int STATE_FAN_ON = 3;
+    private final int STATE_FAN_OFF = 4;
+    private final int STATE_DRAIN_OPEN = 5;
+    private final int STATE_DRAIN_CLOSE = 6;
+    private final int STATE_SOLENOID_OPEN = 7;
+    private final int STATE_SOLENOID_CLOSE = 8;
+    private final int STATE_HUMIDIFIER_ON = 9;
+    private final int STATE_HUMIDIFIER_OFF = 10;
+
+    private volatile int mStateLED;
+    private volatile int mStateFan;
+    private volatile int mStateDrain;
+    private volatile int mStateSolenoid;
+    private volatile int mStateHumidifier;
+
 
     private final String TAG = getClass().getName();
 
@@ -93,9 +100,9 @@ public class HomeFragment extends Fragment {
 
         initializeView(v);
 
-        getMode();
+        asyncGetMode();
 
-        getStates();
+        asyncGetStates();
 
         return v;
     }
@@ -118,46 +125,123 @@ public class HomeFragment extends Fragment {
         mIVFan = v.findViewById(R.id.iv_fan);
         mIVHumidifier = v.findViewById(R.id.iv_humidifier);
 
-        /* when user click button, toggle mode */
+        /* when user clicks button, mode is toggled */
         mBtnMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleMode();
+                asyncToggleMode();
             }
         });
 
         mCVWater.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mStateSolenoid == STATE_SOLENOID_OPEN) {
+                    asyncStateChange(STATE_SOLENOID_CLOSE);
+                } else if (mStateSolenoid == STATE_SOLENOID_CLOSE) {
+                    asyncStateChange(STATE_SOLENOID_OPEN);
+                }
             }
         });
+
         mCVDrain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mStateDrain == STATE_DRAIN_OPEN) {
+                    asyncStateChange(STATE_DRAIN_CLOSE);
+                } else if (mStateDrain == STATE_DRAIN_CLOSE) {
+                    asyncStateChange(STATE_DRAIN_OPEN);
+                }
             }
         });
+
         mCVLED.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mStateLED == STATE_LED_ON) {
+                    asyncStateChange(STATE_LED_OFF);
+                } else if (mStateLED == STATE_LED_OFF) {
+                    asyncStateChange(STATE_LED_ON);
+                }
             }
         });
+
         mCVFan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mStateFan == STATE_FAN_ON) {
+                    asyncStateChange(STATE_FAN_OFF);
+                } else if (mStateFan == STATE_FAN_OFF) {
+                    asyncStateChange(STATE_FAN_ON);
+                }
             }
         });
+
         mCVHumidifier.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mStateHumidifier == STATE_HUMIDIFIER_ON) {
+                    asyncStateChange(STATE_HUMIDIFIER_OFF);
+                }
+                else if (mStateHumidifier == STATE_HUMIDIFIER_OFF) {
+                    asyncStateChange(STATE_HUMIDIFIER_ON);
+                }
             }
         });
     }
-    private void getStates() {
+
+    private void asyncStateChange(int cmd)
+    {
+        Thread threadStateChange = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OutputStream os;
+                InputStream is;
+                BufferedReader br;
+                byte[] sendBytes;
+
+                Socket sock = new Socket();
+
+                try {
+                    /* open socket and connect to server */
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
+                            1000);
+
+                    /* send command */
+                    os = sock.getOutputStream();
+                    sendBytes = NetworkUtil.NETWORK_CMD_STATE_CHANGE_CLIENT_TO_SERVER.getBytes();
+                    os.write(sendBytes, 0, sendBytes.length);
+                    os.flush();
+
+                    Thread.sleep(500);
+
+                    /* send second command */
+                    sendBytes = String.valueOf(cmd).getBytes();
+                    os.write(sendBytes, 0, sendBytes.length);
+                    os.flush();
+
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    /* make sure to close socket */
+                    try {
+                        sock.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        threadStateChange.start();
+    }
+
+    private void asyncGetStates() {
 
         /* receive data from the specified sensors */
         Thread mStateThread = new Thread(new Runnable() {
@@ -171,14 +255,14 @@ public class HomeFragment extends Fragment {
                 Socket sock = new Socket();
 
                 try {
-                    /* onnect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                                    NetworkUtil.SERVER_PORT),
+                    /* connect to server */
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
                             1000);
 
                     /* send command */
                     os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.SOCK_CMD_STATE_SERVER_TO_CLIENT.getBytes();
+                    sendBytes = NetworkUtil.NETWORK_CMD_STATE_SERVER_TO_CLIENT.getBytes();
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
@@ -186,66 +270,85 @@ public class HomeFragment extends Fragment {
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
-                        String strStateLED = br.readLine();
-                        String strStateFan = br.readLine();
-                        String strStateSolenoid = br.readLine();
-                        String strStateDrain = br.readLine();
-                        String strStateHumidifier = br.readLine();
+                        int StateLED = Integer.parseInt(br.readLine());
+                        int StateFan = Integer.parseInt(br.readLine());
+                        int StateSolenoid = Integer.parseInt(br.readLine());
+                        int StateDrain = Integer.parseInt(br.readLine());
+                        int StateHumidifier = Integer.parseInt(br.readLine());
 
-                        /* update UI */
                         try {
+                            /* update UI */
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (strStateLED.equals(STATE_LED_ON)) {
+                                    if (StateLED == STATE_LED_ON) {
                                         mCVLED.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_active));
-                                        mIVWater.setImageResource(R.drawable.active_bolb);
-                                    }
-                                    else {
+                                        mIVLED.setImageResource(R.drawable.active_bolb);
+
+                                        mStateLED = STATE_LED_ON;
+                                    } else if (StateLED == STATE_LED_OFF) {
                                         mCVLED.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_deactive));
-                                        mIVWater.setImageResource(R.drawable.bolb);
+                                        mIVLED.setImageResource(R.drawable.bolb);
+
+                                        mStateLED = STATE_LED_OFF;
                                     }
-                                    if (strStateFan.equals(STATE_FAN_ON)) {
+
+                                    if (StateFan == STATE_FAN_ON) {
                                         mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_active));
                                         mIVFan.setImageResource(R.drawable.active_fan);
-                                    }
-                                    else {
+
+                                        mStateFan = STATE_FAN_ON;
+                                    } else if (StateFan == STATE_FAN_OFF) {
                                         mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_deactive));
                                         mIVFan.setImageResource(R.drawable.fan);
+
+                                        mStateFan = STATE_FAN_OFF;
                                     }
-                                    if (strStateSolenoid.equals(STATE_SOLENOID_OPEN)) {
+
+                                    if (StateSolenoid == STATE_SOLENOID_OPEN) {
                                         mCVWater.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_active));
                                         mIVWater.setImageResource(R.drawable.active_droplet);
-                                    }
-                                    else {
+
+                                        mStateSolenoid = STATE_SOLENOID_OPEN;
+                                    } else if (StateSolenoid == STATE_SOLENOID_CLOSE) {
                                         mCVWater.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_deactive));
                                         mIVWater.setImageResource(R.drawable.droplet);
+
+                                        mStateSolenoid = STATE_SOLENOID_CLOSE;
                                     }
-                                    if (strStateDrain.equals(STATE_DRAIN_OPEN)) {
+
+                                    if (StateDrain == STATE_DRAIN_OPEN) {
                                         mCVDrain.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_active));
                                         mIVDrain.setImageResource(R.drawable.active_drainage);
-                                    }
-                                    else {
+
+                                        mStateDrain = STATE_DRAIN_OPEN;
+                                    } else if (StateDrain == STATE_DRAIN_CLOSE) {
                                         mCVDrain.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_deactive));
                                         mIVDrain.setImageResource(R.drawable.drainage);
+
+                                        mStateDrain = STATE_DRAIN_CLOSE;
                                     }
-                                    if (strStateHumidifier.equals(STATE_HUMIDIFIER_ON)) {
+
+                                    if (StateHumidifier == STATE_HUMIDIFIER_ON) {
                                         mCVHumidifier.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_active));
                                         mIVHumidifier.setImageResource(R.drawable.active_humidifier);
-                                    }
-                                    else {
+
+                                        mStateHumidifier = STATE_HUMIDIFIER_ON;
+                                    } else if (StateHumidifier == STATE_HUMIDIFIER_OFF) {
                                         mCVHumidifier.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_deactive));
                                         mIVHumidifier.setImageResource(R.drawable.humidifier);
+
+                                        mStateHumidifier = STATE_HUMIDIFIER_OFF;
                                     }
                                 }
                             });
@@ -270,7 +373,7 @@ public class HomeFragment extends Fragment {
 
         mStateThread.start();
     }
-    private void toggleMode()
+    private void asyncToggleMode()
     {
         Thread mThreadModeToggle = new Thread(new Runnable() {
             @Override
@@ -284,13 +387,13 @@ public class HomeFragment extends Fragment {
 
                 try {
                     /* open socket and connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                                    NetworkUtil.SERVER_PORT),
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
                             1000);
 
                     /* send command */
                     os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.SOCK_CMD_MODE_TOGGLE_CLIENT_TO_SERVER.getBytes();
+                    sendBytes = NetworkUtil.NETWORK_CMD_MODE_TOGGLE_CLIENT_TO_SERVER.getBytes();
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
@@ -299,21 +402,21 @@ public class HomeFragment extends Fragment {
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
 
-                        String strMode = br.readLine();
+                        int mode = Integer.parseInt(br.readLine());
 
                         /* update mCurrentMode */
-                        mCurrentMode = strMode;
+                        mCurrentMode = mode;
 
                         /* update UI */
                         try {
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (strMode.equals(MODE_AUTO))
+                                    if (mode == MODE_AUTO)
                                     {
                                         mTVMode.setText("Current Mode is AUTO");
                                     }
-                                    else if (strMode.equals(MODE_MANUAL))
+                                    else if (mode == MODE_MANUAL)
                                     {
                                         mTVMode.setText("Current Mode is MANUAL");
                                     }
@@ -341,7 +444,7 @@ public class HomeFragment extends Fragment {
         mThreadModeToggle.start();
     }
 
-    private void getMode()
+    private void asyncGetMode()
     {
         /* receive mode data from server */
         Thread mThreadMode = new Thread(new Runnable() {
@@ -356,13 +459,13 @@ public class HomeFragment extends Fragment {
 
                 try {
                     /* open socket and connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                                    NetworkUtil.SERVER_PORT),
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
                             1000);
 
                     /* send command */
                     os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.SOCK_CMD_MODE_SERVER_TO_CLIENT.getBytes();
+                    sendBytes = NetworkUtil.NETWORK_CMD_MODE_SERVER_TO_CLIENT.getBytes();
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
@@ -371,19 +474,16 @@ public class HomeFragment extends Fragment {
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
 
-                        String strMode = br.readLine();
+                        int mode = Integer.parseInt(br.readLine());
 
-                        /* update UI */
                         try {
+                            /* update UI */
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (strMode.equals(MODE_AUTO))
-                                    {
+                                    if (mode == MODE_AUTO) {
                                         mTVMode.setText("Current Mode is AUTO");
-                                    }
-                                    else if (strMode.equals(MODE_MANUAL))
-                                    {
+                                    } else if (mode == MODE_MANUAL) {
                                         mTVMode.setText("Current Mode is MANUAL");
                                     }
                                 }
