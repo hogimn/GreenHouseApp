@@ -3,7 +3,6 @@ package com.mds.smartcontroller.activities;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
@@ -50,6 +49,9 @@ public class HistoryActivity extends Activity {
 
     private final int WHITE = Color.rgb(255,255,255);
 
+    private final int DATABASE_HUMI = 1;
+    private final int DATABASE_TEMP = 2;
+
     private final String TAG = this.getClass().getName();
 
     @Override
@@ -82,18 +84,25 @@ public class HistoryActivity extends Activity {
 
                 try {
                     /* connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                                    NetworkUtil.SERVER_PORT),
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
                             1000);
 
                     /* send command */
                     os = sock.getOutputStream();
+                    sendBytes = NetworkUtil.NETWORK_CMD_DATABASE_SERVER_TO_CLIENT.getBytes();
+                    os.write(sendBytes, 0, sendBytes.length);
+                    os.flush();
+
+                    Thread.sleep(500);
+
+                    /* send second command */
                     if (mSensor.equals("humi")) {
-                        sendBytes = NetworkUtil.SOCK_CMD_HUMI_SERVER_TO_CLIENT.getBytes();
+                        sendBytes = String.valueOf(DATABASE_HUMI).getBytes();
                     } else if (mSensor.equals("temp")) {
-                        sendBytes = NetworkUtil.SOCK_CMD_TEMP_SERVER_TO_CLIENT.getBytes();
+                        sendBytes = String.valueOf(DATABASE_TEMP).getBytes();
                     } else {
-                        sendBytes = "fail".getBytes();
+                        throw new NullPointerException();
                     }
 
                     os.write(sendBytes, 0, sendBytes.length);
@@ -103,11 +112,11 @@ public class HistoryActivity extends Activity {
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
                     while (mActivity != null) {
-                        /* receive sensor data */
-                        String sensorData = br.readLine();
-
                         /* update UI */
                         try {
+                            /* receive sensor data */
+                            String sensorData = br.readLine();
+
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -127,6 +136,8 @@ public class HistoryActivity extends Activity {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
                     /* make sure to close socket */

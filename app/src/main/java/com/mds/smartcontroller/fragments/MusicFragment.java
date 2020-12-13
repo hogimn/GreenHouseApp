@@ -384,13 +384,13 @@ public class MusicFragment extends ListFragment {
 
         try {
             /* connect to server */
-            sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                            NetworkUtil.SERVER_PORT),
+            sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                            NetworkUtil.NETWORK_SERVER_PORT),
                     1000);
 
             /* send command */
             os = sock.getOutputStream();
-            sendBytes = NetworkUtil.SOCK_CMD_PLAY_CLIENT_TO_SERVER.getBytes();
+            sendBytes = NetworkUtil.NETWORK_CMD_PLAY_CLIENT_TO_SERVER.getBytes();
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
@@ -429,13 +429,13 @@ public class MusicFragment extends ListFragment {
 
         try {
             /* connect to server */
-            sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                    NetworkUtil.SERVER_PORT),
+            sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                    NetworkUtil.NETWORK_SERVER_PORT),
                     1000);
 
             /* send command */
             os = sock.getOutputStream();
-            sendBytes = NetworkUtil.SOCK_CMD_DELETE_CLIENT_TO_SERVER.getBytes();
+            sendBytes = NetworkUtil.NETWORK_CMD_DELETE_CLIENT_TO_SERVER.getBytes();
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
@@ -481,13 +481,13 @@ public class MusicFragment extends ListFragment {
             mMusicItemList.clear();
 
             /* connect to server */
-            sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                    NetworkUtil.SERVER_PORT),
+            sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                    NetworkUtil.NETWORK_SERVER_PORT),
                     1000);
 
             /* send command */
             os = sock.getOutputStream();
-            sendBytes = NetworkUtil.SOCK_CMD_LIST_SERVER_TO_CLIENT.getBytes();
+            sendBytes = NetworkUtil.NETWORK_CMD_LIST_SERVER_TO_CLIENT.getBytes();
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
@@ -499,7 +499,7 @@ public class MusicFragment extends ListFragment {
 
             while ((receiveString = br.readLine()) != null) {
                 /* reached the end of music list */
-                if (receiveString.equals(NetworkUtil.SOCK_CMD_END)) {
+                if (receiveString.equals(NetworkUtil.NETWORK_CMD_END)) {
                     break;
                 }
 
@@ -512,7 +512,7 @@ public class MusicFragment extends ListFragment {
             /* receive the title of the currently played music on the server */
             while ((receiveString = br.readLine()) != null) {
 
-                if (receiveString.equals(NetworkUtil.SOCK_CMD_END)) {
+                if (receiveString.equals(NetworkUtil.NETWORK_CMD_END)) {
                     break;
                 }
 
@@ -590,13 +590,13 @@ public class MusicFragment extends ListFragment {
 
             /* open socket and connect to server */
 
-            sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                    NetworkUtil.SERVER_PORT),
+            sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                    NetworkUtil.NETWORK_SERVER_PORT),
                     1000);
 
             /* send command */
             os = sock.getOutputStream();
-            sendBytes = NetworkUtil.SOCK_CMD_FILE_CLIENT_TO_SERVER.getBytes();
+            sendBytes = NetworkUtil.NETWORK_CMD_FILE_CLIENT_TO_SERVER.getBytes();
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 

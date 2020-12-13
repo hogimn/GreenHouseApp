@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,13 +92,13 @@ public class HistoryFragment extends Fragment {
 
                 try {
                     /* open socket and connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                            NetworkUtil.SERVER_PORT),
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                            NetworkUtil.NETWORK_SERVER_PORT),
                             1000);
 
                     /* send command */
                     os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.SOCK_CMD_SENSOR_SERVER_TO_CLIENT.getBytes();
+                    sendBytes = NetworkUtil.NETWORK_CMD_SENSOR_SERVER_TO_CLIENT.getBytes();
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
@@ -129,7 +128,6 @@ public class HistoryFragment extends Fragment {
 
                         /* receive temperature data next */
                         String strTemp = br.readLine();
-                        Log.d("run", "temp: " + strTemp);
 
                         /* update UI */
                         try {

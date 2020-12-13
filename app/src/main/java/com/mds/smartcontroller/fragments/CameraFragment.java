@@ -86,13 +86,13 @@ public class CameraFragment extends Fragment {
 
                 try {
                     /* connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.SERVER_IP,
-                                    NetworkUtil.SERVER_PORT),
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
                             1000);
 
                     /* send command */
                     os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.SOCK_CMD_CAMERA_SERVER_TO_CLIENT.getBytes();
+                    sendBytes = NetworkUtil.NETWORK_CMD_CAMERA_SERVER_TO_CLIENT.getBytes();
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
