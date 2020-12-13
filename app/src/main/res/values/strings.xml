@@ -9,6 +9,7 @@
     <string name="control_led">LED</string>
     <string name="control_fan">Fan</string>
     <string name="control_humidifier">Humidifier</string>
+    <string name="control_dryer">Dryer</string>
     <string name="selected_file">Selected File</string>
     <string name="btn_transfer">Transfer</string>
     <string name="file_chooser">Choose File</string>
