@@ -405,13 +405,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:text="humidifier on: " />
+                android:text="@string/str_humidifier_boundary"
+                android:layout_marginStart="20dp" />
 
             <EditText
                 android:id="@+id/et_boundary_humidifier"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ems="5"
+                android:ems="2"
                 android:text="" />
         </LinearLayout>
 
@@ -428,13 +429,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:text="fan on: " />
+                android:text="@string/str_fan_boundary"
+                android:layout_marginStart="20dp" />
 
             <EditText
                 android:id="@+id/et_boundary_fan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ems="5"
+                android:ems="2"
                 android:text="" />
         </LinearLayout>
 
@@ -451,13 +453,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:text="dryer on: " />
+                android:text="@string/str_dryer_boundary"
+                android:layout_marginStart="20dp" />
 
             <EditText
                 android:id="@+id/et_boundary_dryer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ems="5"
+                android:ems="2"
                 android:text="" />
         </LinearLayout>
 
@@ -474,13 +477,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:text="cooler on: " />
+                android:text="@string/str_cooler_boundary"
+                android:layout_marginStart="20dp" />
 
             <EditText
                 android:id="@+id/et_boundary_cooler"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ems="5"
+                android:ems="2"
                 android:text="" />
         </LinearLayout>
 
@@ -497,13 +501,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
-                android:text="LED on: " />
+                android:text="@string/str_led_boundary"
+                android:layout_marginStart="20dp" />
 
             <EditText
                 android:id="@+id/et_boundary_led"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ems="5"
+                android:ems="2"
                 android:text="" />
         </LinearLayout>
 
@@ -517,7 +522,8 @@
             android:textColor="@color/white"
             app:layout_constraintTop_toBottomOf="@id/LinearLayout8"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@drawable/button_background" />
+            android:background="@drawable/button_background"
+            android:layout_marginStart="20dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
