@@ -262,7 +262,7 @@ public class HomeFragment extends Fragment {
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
-                    Thread.sleep(100);
+                    Thread.sleep(500);
 
                     /* send boundary data to update */
                     sendString = mETHumidifier.getText()+"\n"+
@@ -317,7 +317,7 @@ public class HomeFragment extends Fragment {
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
-                    Thread.sleep(100);
+                    Thread.sleep(500);
 
                     /* send second command */
                     sendBytes = String.valueOf(cmd).getBytes();
@@ -660,31 +660,23 @@ public class HomeFragment extends Fragment {
                     /* receive boundary data */
                     is = sock.getInputStream();
                     br = new BufferedReader(new InputStreamReader(is));
-                    while (mActivity != null) {
-                        try {
-                            String boundary_humidifier = br.readLine();
-                            String boundary_fan = br.readLine();
-                            String boundary_dryer = br.readLine();
-                            String boundary_cooler = br.readLine();
-                            String boundary_led = br.readLine();
+                    String boundary_humidifier = br.readLine();
+                    String boundary_fan = br.readLine();
+                    String boundary_dryer = br.readLine();
+                    String boundary_cooler = br.readLine();
+                    String boundary_led = br.readLine();
 
-                            /* update UI */
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mETHumidifier.setText(boundary_humidifier);
-                                    mETFan.setText(boundary_fan);
-                                    mETDryer.setText(boundary_dryer);
-                                    mETCooler.setText(boundary_cooler);
-                                    mETLED.setText(boundary_led);
-                                }
-                            });
-                        } catch (NullPointerException e) {
-                            break;
-                        } catch (NumberFormatException e) {
-                            break;
+                    /* update UI */
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mETHumidifier.setText(boundary_humidifier);
+                            mETFan.setText(boundary_fan);
+                            mETDryer.setText(boundary_dryer);
+                            mETCooler.setText(boundary_cooler);
+                            mETLED.setText(boundary_led);
                         }
-                    }
+                    });
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
