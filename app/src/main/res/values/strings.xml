@@ -18,4 +18,9 @@
     <string name="fragment_history_title">History</string>
     <string name="fragment_music_title">music</string>
     <string name="fragment_camera_title">camera</string>
+    <string name="str_humidifier_boundary"><![CDATA[Humidifier On: humi <]]></string>
+    <string name="str_fan_boundary"><![CDATA[Fan On: humi >]]></string>
+    <string name="str_dryer_boundary"><![CDATA[Dryer On: temp <]]></string>
+    <string name="str_cooler_boundary"><![CDATA[Cooler On: temp >]]></string>
+    <string name="str_led_boundary"><![CDATA[LED On: photo <]]></string>
 </resources>
