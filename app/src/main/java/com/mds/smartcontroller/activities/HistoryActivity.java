@@ -97,7 +97,7 @@ public class HistoryActivity extends Activity {
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
-                    Thread.sleep(100);
+                    Thread.sleep(500);
 
                     /* send second command */
                     if (mSensor.equals("humi")) {
