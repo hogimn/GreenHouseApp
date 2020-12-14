@@ -189,7 +189,7 @@ public class MusicFragment extends ListFragment {
 
                                         /* sleep 500ms to reopen socket successfully */
                                         try {
-                                            Thread.sleep(500);
+                                            Thread.sleep(100);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
@@ -313,7 +313,7 @@ public class MusicFragment extends ListFragment {
 
                         /* sleep 500ms to reopen socket successfully */
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -391,7 +391,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             /* send file name */
             sendBytes = fileName.getBytes();
@@ -436,7 +436,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             /* send file name */
             sendBytes = fileName.getBytes();
@@ -488,7 +488,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             /* receive music list */
             is = sock.getInputStream();
@@ -504,7 +504,7 @@ public class MusicFragment extends ListFragment {
                 mMusicItemList.add(new MusicItem(receiveString, false));
             }
 
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             /* receive the title of the currently played music on the server */
             while ((receiveString = br.readLine()) != null) {
@@ -597,7 +597,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             /* send file name */
             File sendFile = new File(RealPathUtil
@@ -607,7 +607,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(500);
+            Thread.sleep(100);
 
             /* send file content */
             sendBytes = new byte[(int) sendFile.length()];
