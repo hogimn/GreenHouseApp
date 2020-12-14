@@ -154,7 +154,7 @@ public class MusicFragment extends ListFragment {
         });
 
         /**
-         * if user click a item in ListView long enough
+         * if user clicks a item in ListView long enough
          * delete the selected file from the server
          */
         getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -189,7 +189,7 @@ public class MusicFragment extends ListFragment {
 
                                         /* sleep 500ms to reopen socket successfully */
                                         try {
-                                            Thread.sleep(100);
+                                            Thread.sleep(500);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
@@ -313,21 +313,38 @@ public class MusicFragment extends ListFragment {
 
                         /* sleep 500ms to reopen socket successfully */
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(500);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
 
                         /* get updated music list from server */
-                        getMusicList();
-
-                        /* update UI */
-                        mActivity.runOnUiThread(new Runnable() {
+                        Thread updateMusicList = new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                mArrayAdaper.notifyDataSetChanged();
+                                getMusicList();
                             }
                         });
+
+                        updateMusicList.start();
+                        try {
+                            updateMusicList.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        try {
+                            /* update UI */
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    mArrayAdaper.notifyDataSetChanged();
+                                }
+                            });
+                        } catch (NullPointerException e) {
+                            /* ignore */
+                        }
                     }
                 }).start();
             }
@@ -391,7 +408,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
             /* send file name */
             sendBytes = fileName.getBytes();
@@ -436,7 +453,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
             /* send file name */
             sendBytes = fileName.getBytes();
@@ -488,7 +505,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
             /* receive music list */
             is = sock.getInputStream();
@@ -504,7 +521,7 @@ public class MusicFragment extends ListFragment {
                 mMusicItemList.add(new MusicItem(receiveString, false));
             }
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
             /* receive the title of the currently played music on the server */
             while ((receiveString = br.readLine()) != null) {
@@ -597,7 +614,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
             /* send file name */
             File sendFile = new File(RealPathUtil
@@ -607,7 +624,7 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-            Thread.sleep(100);
+            Thread.sleep(500);
 
             /* send file content */
             sendBytes = new byte[(int) sendFile.length()];
