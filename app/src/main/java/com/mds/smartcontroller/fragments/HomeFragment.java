@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -54,6 +55,16 @@ public class HomeFragment extends Fragment {
     private ImageView mIVFan;
     private ImageView mIVHumidifier;
     private ImageView mIVDryer;
+
+    /* EditText to represent boundary data */
+    private EditText mETHumidifier;
+    private EditText mETFan;
+    private EditText mETDryer;
+    private EditText mETCooler;
+    private EditText mETLED;
+
+    /* button to update boundary data */
+    private Button mBtnBoundaryUpdate;
 
     /* current mode */
     private int mCurrentMode;
@@ -111,6 +122,8 @@ public class HomeFragment extends Fragment {
 
         asyncGetStates();
 
+        asyncGetBoundary();
+
         return v;
     }
 
@@ -133,6 +146,14 @@ public class HomeFragment extends Fragment {
         mIVFan = v.findViewById(R.id.iv_fan);
         mIVHumidifier = v.findViewById(R.id.iv_humidifier);
         mIVDryer = v.findViewById(R.id.iv_dryer);
+
+        mETHumidifier = v.findViewById(R.id.et_boundary_humidifier);
+        mETFan = v.findViewById(R.id.et_boundary_fan);
+        mETDryer = v.findViewById(R.id.et_boundary_dryer);
+        mETCooler = v.findViewById(R.id.et_boundary_cooler);
+        mETLED = v.findViewById(R.id.et_boundary_led);
+
+        mBtnBoundaryUpdate = v.findViewById(R.id.btn_boundary_update);
 
         /* when user clicks button, mode is toggled */
         mBtnMode.setOnClickListener(new View.OnClickListener() {
@@ -209,6 +230,69 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+
+        mBtnBoundaryUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                asyncUpdateBoundaryData();
+            }
+        });
+    }
+
+    private void asyncUpdateBoundaryData()
+    {
+        Thread threadUpdateBoundary = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OutputStream os;
+                byte[] sendBytes;
+                String sendString;
+
+                Socket sock = new Socket();
+
+                try {
+                    /* open socket and connect to server */
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
+                            1000);
+
+                    /* send command */
+                    os = sock.getOutputStream();
+                    sendBytes = NetworkUtil.NETWORK_CMD_BOUNDARY_CLIENT_TO_SERVER.getBytes();
+                    os.write(sendBytes, 0, sendBytes.length);
+                    os.flush();
+
+                    Thread.sleep(100);
+
+                    /* send boundary data to update */
+                    sendString = mETHumidifier.getText()+"\n"+
+                            mETFan.getText()+"\n"+
+                            mETDryer.getText()+"\n"+
+                            mETCooler.getText()+"\n"+
+                            mETLED.getText();
+                    sendBytes = sendString.getBytes();
+                    os.write(sendBytes, 0, sendBytes.length);
+                    os.flush();
+
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    /* make sure to close socket */
+                    try {
+                        sock.close();
+                        asyncGetBoundary();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        threadUpdateBoundary.start();
     }
 
     private void asyncChangeState(int cmd)
@@ -233,7 +317,7 @@ public class HomeFragment extends Fragment {
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
-                    Thread.sleep(500);
+                    Thread.sleep(100);
 
                     /* send second command */
                     sendBytes = String.valueOf(cmd).getBytes();
@@ -409,6 +493,7 @@ public class HomeFragment extends Fragment {
 
         mStateThread.start();
     }
+
     private void asyncToggleMode()
     {
         Thread mThreadModeToggle = new Thread(new Runnable() {
@@ -546,5 +631,75 @@ public class HomeFragment extends Fragment {
         });
 
         mThreadMode.start();
+    }
+
+    private void asyncGetBoundary()
+    {
+        Thread mThreadBoundary = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OutputStream os;
+                InputStream is;
+                BufferedReader br;
+                byte[] sendBytes;
+
+                Socket sock = new Socket();
+
+                try {
+                    /* open socket and connect to server */
+                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                    NetworkUtil.NETWORK_SERVER_PORT),
+                            1000);
+
+                    /* send command */
+                    os = sock.getOutputStream();
+                    sendBytes = NetworkUtil.NETWORK_CMD_BOUNDARY_SERVER_TO_CLIENT.getBytes();
+                    os.write(sendBytes, 0, sendBytes.length);
+                    os.flush();
+
+                    /* receive boundary data */
+                    is = sock.getInputStream();
+                    br = new BufferedReader(new InputStreamReader(is));
+                    while (mActivity != null) {
+                        try {
+                            String boundary_humidifier = br.readLine();
+                            String boundary_fan = br.readLine();
+                            String boundary_dryer = br.readLine();
+                            String boundary_cooler = br.readLine();
+                            String boundary_led = br.readLine();
+
+                            /* update UI */
+                            mActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mETHumidifier.setText(boundary_humidifier);
+                                    mETFan.setText(boundary_fan);
+                                    mETDryer.setText(boundary_dryer);
+                                    mETCooler.setText(boundary_cooler);
+                                    mETLED.setText(boundary_led);
+                                }
+                            });
+                        } catch (NullPointerException e) {
+                            break;
+                        } catch (NumberFormatException e) {
+                            break;
+                        }
+                    }
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    /* make sure to close socket */
+                    try {
+                        sock.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        mThreadBoundary.start();
     }
 }
