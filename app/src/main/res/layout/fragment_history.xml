@@ -63,6 +63,13 @@
             app:layout_constraintTop_toBottomOf="@id/toolbar">
 
             <LinearLayout
+                android:id="@+id/humi_graph"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="#00000000"
+                android:orientation="vertical" />
+
+            <LinearLayout
                 android:id="@+id/temp_graph"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
@@ -70,7 +77,23 @@
                 android:orientation="vertical" />
 
             <LinearLayout
-                android:id="@+id/humi_graph"
+                android:id="@+id/photo_graph"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginTop="10dp"
+                android:background="#00000000"
+                android:orientation="vertical" />
+
+            <LinearLayout
+                android:id="@+id/magnet_graph"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginTop="10dp"
+                android:background="#00000000"
+                android:orientation="vertical" />
+
+            <LinearLayout
+                android:id="@+id/moisture_graph"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:layout_marginTop="10dp"
