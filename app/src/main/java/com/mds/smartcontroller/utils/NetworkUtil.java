@@ -12,6 +12,8 @@ public class NetworkUtil {
     public static final String NETWORK_CMD_MODE_TOGGLE_CLIENT_TO_SERVER = "8";
     public static final String NETWORK_CMD_STATE_SERVER_TO_CLIENT = "9";
     public static final String NETWORK_CMD_STATE_CHANGE_CLIENT_TO_SERVER = "10";
+    public static final String NETWORK_CMD_BOUNDARY_SERVER_TO_CLIENT = "11";
+    public static final String NETWORK_CMD_BOUNDARY_CLIENT_TO_SERVER = "12";
     public static final String NETWORK_CMD_END = "-1";
 
     public static final int NETWORK_SERVER_PORT = 3000;
