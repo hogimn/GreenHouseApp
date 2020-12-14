@@ -392,6 +392,133 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/LinearLayout4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/LinearLayout3">
+
+            <TextView
+                android:id="@+id/tv_boundary_humidifer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="humidifier on: " />
+
+            <EditText
+                android:id="@+id/et_boundary_humidifier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:text="" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearLayout5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/LinearLayout4">
+
+            <TextView
+                android:id="@+id/tv_boundary_fan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="fan on: " />
+
+            <EditText
+                android:id="@+id/et_boundary_fan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:text="" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearLayout6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/LinearLayout5">
+
+            <TextView
+                android:id="@+id/tv_boundary_dryer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="dryer on: " />
+
+            <EditText
+                android:id="@+id/et_boundary_dryer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:text="" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearLayout7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/LinearLayout6">
+
+            <TextView
+                android:id="@+id/tv_boundary_cooler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="cooler on: " />
+
+            <EditText
+                android:id="@+id/et_boundary_cooler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:text="" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearLayout8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/LinearLayout7">
+
+            <TextView
+                android:id="@+id/tv_boundary_led"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:text="LED on: " />
+
+            <EditText
+                android:id="@+id/et_boundary_led"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:text="" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_boundary_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="20dp"
+            android:text="Update"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toBottomOf="@id/LinearLayout8"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@drawable/button_background" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>
