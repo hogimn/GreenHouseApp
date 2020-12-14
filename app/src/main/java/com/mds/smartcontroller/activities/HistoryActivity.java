@@ -51,6 +51,9 @@ public class HistoryActivity extends Activity {
 
     private final int DATABASE_HUMI = 1;
     private final int DATABASE_TEMP = 2;
+    private final int DATABASE_PHOTO = 3;
+    private final int DATABASE_MAGNET = 4;
+    private final int DATABASE_MOISTURE = 5;
 
     private final String TAG = this.getClass().getName();
 
@@ -67,10 +70,10 @@ public class HistoryActivity extends Activity {
 
         initializeView();
 
-        getSensorData();
+        asyncGetSensorData();
     }
 
-    private void getSensorData()
+    private void asyncGetSensorData()
     {
         mGraphThread = new Thread(new Runnable() {
             @Override
@@ -94,13 +97,19 @@ public class HistoryActivity extends Activity {
                     os.write(sendBytes, 0, sendBytes.length);
                     os.flush();
 
-                    Thread.sleep(500);
+                    Thread.sleep(100);
 
                     /* send second command */
                     if (mSensor.equals("humi")) {
                         sendBytes = String.valueOf(DATABASE_HUMI).getBytes();
                     } else if (mSensor.equals("temp")) {
                         sendBytes = String.valueOf(DATABASE_TEMP).getBytes();
+                    } else if (mSensor.equals("photo")) {
+                        sendBytes = String.valueOf(DATABASE_PHOTO).getBytes();
+                    } else if (mSensor.equals("magnet")) {
+                        sendBytes = String.valueOf(DATABASE_MAGNET).getBytes();
+                    } else if (mSensor.equals("moisture")) {
+                        sendBytes = String.valueOf(DATABASE_MOISTURE).getBytes();
                     } else {
                         throw new NullPointerException();
                     }
@@ -187,6 +196,15 @@ public class HistoryActivity extends Activity {
         } else if (mSensor.equals("humi")) {
             vp_sensor.setMinY(0);
             vp_sensor.setMaxY(100);
+        } else if (mSensor.equals("photo")) {
+            vp_sensor.setMinY(0);
+            vp_sensor.setMaxY(2000);
+        } else if (mSensor.equals("magnet")) {
+            vp_sensor.setMinY(0);
+            vp_sensor.setMaxY(1);
+        } else if (mSensor.equals("moisture")) {
+            vp_sensor.setMinY(0);
+            vp_sensor.setMaxY(1);
         }
 
         mSensorSeries = new LineGraphSeries<DataPoint>();
