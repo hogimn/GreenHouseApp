@@ -14,7 +14,6 @@ import com.mds.smartcontroller.fragments.HomeFragment;
 import com.mds.smartcontroller.fragments.MusicFragment;
 
 public class MainActivity extends FragmentActivityBase {
-    private int mCurrentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
