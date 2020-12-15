@@ -86,6 +86,7 @@ public class HomeFragment extends Fragment {
     private final int STATE_HUMIDIFIER_OFF = 10;
     private final int STATE_DRYER_ON = 11;
     private final int STATE_DRYER_OFF = 12;
+    private final int STATE_FAN_VERY_FAST = 13;
 
     /* current device state */
     private volatile int mStateLED;
@@ -199,7 +200,7 @@ public class HomeFragment extends Fragment {
         mCVFan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mStateFan == STATE_FAN_ON) {
+                if (mStateFan == STATE_FAN_ON || mStateFan == STATE_FAN_VERY_FAST) {
                     asyncChangeState(STATE_FAN_OFF);
                 } else if (mStateFan == STATE_FAN_OFF) {
                     asyncChangeState(STATE_FAN_ON);
@@ -405,7 +406,14 @@ public class HomeFragment extends Fragment {
                                         mIVFan.setImageResource(R.drawable.active_fan);
 
                                         mStateFan = STATE_FAN_ON;
-                                    } else if (StateFan == STATE_FAN_OFF) {
+                                    } else if (StateFan == STATE_FAN_VERY_FAST) {
+                                        mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                                R.color.card_background_color_active));
+                                        mIVFan.setImageResource(R.drawable.active_fan);
+
+                                        mStateFan = STATE_FAN_VERY_FAST;
+                                    }
+                                    else if (StateFan == STATE_FAN_OFF) {
                                         mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
                                                 R.color.card_background_color_deactive));
                                         mIVFan.setImageResource(R.drawable.fan);
