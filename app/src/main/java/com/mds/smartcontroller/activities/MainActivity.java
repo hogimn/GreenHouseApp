@@ -1,9 +1,7 @@
 package com.mds.smartcontroller.activities;
 
 import android.os.Bundle;
-import android.view.MenuItem;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -28,31 +26,26 @@ public class MainActivity extends FragmentActivityBase {
                         new HomeFragment()).commit();
     }
 
-    private BottomNavigationView.OnNavigationItemSelectedListener navListener =
-            new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                    Fragment selectedFragment = null;
+    private final BottomNavigationView.OnNavigationItemSelectedListener navListener =
+            item -> {
+                Fragment selectedFragment;
 
-                    switch (item.getItemId()) {
-                        case R.id.nav_home:
-                            selectedFragment = new HomeFragment();
-                            break;
-                        case R.id.nav_history:
-                            selectedFragment = new HistoryFragment();
-                            break;
-                        case R.id.nav_music:
-                            selectedFragment = new MusicFragment();
-                            break;
-                        case R.id.nav_camera:
-                            selectedFragment = new CameraFragment();
-                            break;
-                    }
-
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                            selectedFragment).commit();
-
-                    return true;
+                if (item.getItemId() == R.id.nav_home) {
+                    selectedFragment = new HomeFragment();
+                } else if (item.getItemId() == R.id.nav_home) {
+                    selectedFragment = new HistoryFragment();
+                } else if (item.getItemId() == R.id.nav_home) {
+                    selectedFragment = new MusicFragment();
+                } else if (item.getItemId() == R.id.nav_home) {
+                    selectedFragment = new CameraFragment();
+                } else {
+                    selectedFragment = new HomeFragment();
                 }
+
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+
+                return true;
             };
 }

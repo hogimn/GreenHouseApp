@@ -89,95 +89,89 @@ public class HistoryFragment extends Fragment {
     private void asyncGetSensorData() {
 
         /* receive sensor data from server */
-        mThreadSensor = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                OutputStream os;
-                InputStream is;
-                BufferedReader br;
-                byte[] sendBytes;
+        mThreadSensor = new Thread(() -> {
+            OutputStream os;
+            InputStream is;
+            BufferedReader br;
+            byte[] sendBytes;
 
-                Socket sock = new Socket();
+            Socket sock = new Socket();
 
-                try {
-                    /* open socket and connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
-                            NetworkUtil.NETWORK_SERVER_PORT),
-                            1000);
+            try {
+                /* open socket and connect to server */
+                sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                        NetworkUtil.NETWORK_SERVER_PORT),
+                        1000);
 
-                    /* send command */
-                    os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.NETWORK_CMD_SENSOR_SERVER_TO_CLIENT.getBytes();
-                    os.write(sendBytes, 0, sendBytes.length);
-                    os.flush();
+                /* send command */
+                os = sock.getOutputStream();
+                sendBytes = NetworkUtil.NETWORK_CMD_SENSOR_SERVER_TO_CLIENT.getBytes();
+                os.write(sendBytes, 0, sendBytes.length);
+                os.flush();
 
-                    /* receive temparature (2byte) / humid sensor (2byte) data */
-                    is = sock.getInputStream();
-                    br = new BufferedReader(new InputStreamReader(is));
-                    while (mActivity != null) {
+                /* receive temparature (2byte) / humid sensor (2byte) data */
+                is = sock.getInputStream();
+                br = new BufferedReader(new InputStreamReader(is));
+                while (mActivity != null) {
 
-                        try {
-                        /* receive sensor data */
-                        int humi = Integer.parseInt(br.readLine());
-                        int temp = Integer.parseInt(br.readLine());
-                        int photo = Integer.parseInt(br.readLine());
-                        int magnet = Integer.parseInt(br.readLine());
-                        int moisture = Integer.parseInt(br.readLine());
+                    try {
+                    /* receive sensor data */
+                    int humi = Integer.parseInt(br.readLine());
+                    int temp = Integer.parseInt(br.readLine());
+                    int photo = Integer.parseInt(br.readLine());
+                    int magnet = Integer.parseInt(br.readLine());
+                    int moisture = Integer.parseInt(br.readLine());
 
-                        /* update UI */
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mHumiSeries.appendData(new DataPoint(mHumiLastX++,
-                                                    humi),
-                                            true,
-                                            20);
-                                    mTempSeries.appendData(new DataPoint(mTempLastX++,
-                                                    temp),
-                                            true,
-                                            20);
-                                    mPhotoSeries.appendData(new DataPoint(mPhotoLastX++,
-                                                    photo),
-                                            true,
-                                            20);
-                                    mMagnetSeries.appendData(new DataPoint(mMagnetLastX++,
-                                                    magnet),
-                                            true,
-                                            20);
-                                    mMoistureSeries.appendData(new DataPoint(mMoistureLastX++,
-                                                    moisture),
-                                            true,
-                                            20);
+                    /* update UI */
+                        mActivity.runOnUiThread(() -> {
+                            mHumiSeries.appendData(new DataPoint(mHumiLastX++,
+                                            humi),
+                                    true,
+                                    20);
+                            mTempSeries.appendData(new DataPoint(mTempLastX++,
+                                            temp),
+                                    true,
+                                    20);
+                            mPhotoSeries.appendData(new DataPoint(mPhotoLastX++,
+                                            photo),
+                                    true,
+                                    20);
+                            mMagnetSeries.appendData(new DataPoint(mMagnetLastX++,
+                                            magnet),
+                                    true,
+                                    20);
+                            mMoistureSeries.appendData(new DataPoint(mMoistureLastX++,
+                                            moisture),
+                                    true,
+                                    20);
 
-                                    mHumiGraph.onDataChanged(true,
-                                            true);
-                                    mTempGraph.onDataChanged(true,
-                                            true);
-                                    mPhotoGraph.onDataChanged(true,
-                                            true);
-                                    mMagnetGraph.onDataChanged(true,
-                                            true);
-                                    mMoistureGraph.onDataChanged(true,
-                                            true);
-                                }
-                            });
-                        } catch (NullPointerException e) {
-                            break;
-                        } catch (NumberFormatException e) {
-                            break;
-                        }
+                            mHumiGraph.onDataChanged(true,
+                                    true);
+                            mTempGraph.onDataChanged(true,
+                                    true);
+                            mPhotoGraph.onDataChanged(true,
+                                    true);
+                            mMagnetGraph.onDataChanged(true,
+                                    true);
+                            mMoistureGraph.onDataChanged(true,
+                                    true);
+                        });
+                    } catch (NullPointerException e) {
+                        break;
+                    } catch (NumberFormatException e) {
+                        break;
                     }
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
+                }
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                /* make sure to close socket */
+                try {
+                    sock.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    /* make sure to close socket */
-                    try {
-                        sock.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         });
@@ -274,15 +268,15 @@ public class HistoryFragment extends Fragment {
         vp_moisture.setMinY(0);
         vp_moisture.setMaxY(1);
 
-        mTempSeries = new LineGraphSeries<DataPoint>();
+        mTempSeries = new LineGraphSeries<>();
         mTempGraph.addSeries(mTempSeries);
-        mHumiSeries = new LineGraphSeries<DataPoint>();
+        mHumiSeries = new LineGraphSeries<>();
         mHumiGraph.addSeries(mHumiSeries);
-        mPhotoSeries = new LineGraphSeries<DataPoint>();
+        mPhotoSeries = new LineGraphSeries<>();
         mPhotoGraph.addSeries(mPhotoSeries);
-        mMagnetSeries = new LineGraphSeries<DataPoint>();
+        mMagnetSeries = new LineGraphSeries<>();
         mMagnetGraph.addSeries(mMagnetSeries);
-        mMoistureSeries = new LineGraphSeries<DataPoint>();
+        mMoistureSeries = new LineGraphSeries<>();
         mMoistureGraph.addSeries(mMoistureSeries);
 
         mTempSeries.setColor(Color.rgb(0xe9, 0x1e, 0x63));
@@ -306,45 +300,30 @@ public class HistoryFragment extends Fragment {
         LinearLayout layout_moisture = v.findViewById(R.id.moisture_graph);
         layout_moisture.addView(mMoistureGraph);
 
-        mTempGraph.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), HistoryActivity.class);
-                intent.putExtra("sensor", "temp");
-                startActivity(intent);
-            }
+        mTempGraph.setOnClickListener(__ -> {
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
+            intent.putExtra("sensor", "temp");
+            startActivity(intent);
         });
-        mHumiGraph.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), HistoryActivity.class);
-                intent.putExtra("sensor", "humi");
-                startActivity(intent);
-            }
+        mHumiGraph.setOnClickListener(__ -> {
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
+            intent.putExtra("sensor", "humi");
+            startActivity(intent);
         });
-        mPhotoGraph.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), HistoryActivity.class);
-                intent.putExtra("sensor", "photo");
-                startActivity(intent);
-            }
+        mPhotoGraph.setOnClickListener(__ -> {
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
+            intent.putExtra("sensor", "photo");
+            startActivity(intent);
         });
-        mMagnetGraph.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), HistoryActivity.class);
-                intent.putExtra("sensor", "magnet");
-                startActivity(intent);
-            }
+        mMagnetGraph.setOnClickListener(__ -> {
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
+            intent.putExtra("sensor", "magnet");
+            startActivity(intent);
         });
-        mMoistureGraph.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), HistoryActivity.class);
-                intent.putExtra("sensor", "moisture");
-                startActivity(intent);
-            }
+        mMoistureGraph.setOnClickListener(__ -> {
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
+            intent.putExtra("sensor", "moisture");
+            startActivity(intent);
         });
     }
 }

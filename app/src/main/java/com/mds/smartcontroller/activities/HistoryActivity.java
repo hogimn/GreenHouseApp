@@ -75,86 +75,86 @@ public class HistoryActivity extends Activity {
 
     private void asyncGetSensorData()
     {
-        mGraphThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                OutputStream os;
-                InputStream is;
-                BufferedReader br;
-                byte[] sendBytes;
+        mGraphThread = new Thread(() -> {
+            OutputStream os;
+            InputStream is;
+            BufferedReader br;
+            byte[] sendBytes;
 
-                Socket sock = new Socket();
+            Socket sock = new Socket();
 
-                try {
-                    /* connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
-                                    NetworkUtil.NETWORK_SERVER_PORT),
-                            1000);
+            try {
+                /* connect to server */
+                sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                NetworkUtil.NETWORK_SERVER_PORT),
+                        1000);
 
-                    /* send command */
-                    os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.NETWORK_CMD_DATABASE_SERVER_TO_CLIENT.getBytes();
-                    os.write(sendBytes, 0, sendBytes.length);
-                    os.flush();
+                /* send command */
+                os = sock.getOutputStream();
+                sendBytes = NetworkUtil.NETWORK_CMD_DATABASE_SERVER_TO_CLIENT.getBytes();
+                os.write(sendBytes, 0, sendBytes.length);
+                os.flush();
 
-                    Thread.sleep(500);
+                Thread.sleep(500);
 
-                    /* send second command */
-                    if (mSensor.equals("humi")) {
+                /* send second command */
+                switch (mSensor) {
+                    case "humi":
                         sendBytes = String.valueOf(DATABASE_HUMI).getBytes();
-                    } else if (mSensor.equals("temp")) {
+                        break;
+                    case "temp":
                         sendBytes = String.valueOf(DATABASE_TEMP).getBytes();
-                    } else if (mSensor.equals("photo")) {
+                        break;
+                    case "photo":
                         sendBytes = String.valueOf(DATABASE_PHOTO).getBytes();
-                    } else if (mSensor.equals("magnet")) {
+                        break;
+                    case "magnet":
                         sendBytes = String.valueOf(DATABASE_MAGNET).getBytes();
-                    } else if (mSensor.equals("moisture")) {
+                        break;
+                    case "moisture":
                         sendBytes = String.valueOf(DATABASE_MOISTURE).getBytes();
-                    } else {
+                        break;
+                    default:
                         throw new NullPointerException();
+                }
+
+                os.write(sendBytes, 0, sendBytes.length);
+                os.flush();
+
+                /* receive humid sensor (2 bytes) data */
+                is = sock.getInputStream();
+                br = new BufferedReader(new InputStreamReader(is));
+                while (mActivity != null) {
+                    /* update UI */
+                    try {
+                        /* receive sensor data */
+                        String sensorData = br.readLine();
+
+                        mActivity.runOnUiThread(() -> {
+                            /* append to mSensorSeries */
+                            mSensorSeries.appendData(new DataPoint(mLastX++,
+                                            Integer.parseInt(sensorData)),
+                                    true,
+                                    mMaxDataPoints);
+                            mSensorGraph.onDataChanged(true,
+                                    true);
+                        });
+                    } catch (NullPointerException e) {
+                        break;
                     }
-
-                    os.write(sendBytes, 0, sendBytes.length);
-                    os.flush();
-
-                    /* receive humid sensor (2 bytes) data */
-                    is = sock.getInputStream();
-                    br = new BufferedReader(new InputStreamReader(is));
-                    while (mActivity != null) {
-                        /* update UI */
-                        try {
-                            /* receive sensor data */
-                            String sensorData = br.readLine();
-
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    /* append to mSensorSeries */
-                                    mSensorSeries.appendData(new DataPoint(mLastX++,
-                                                    Integer.parseInt(sensorData)),
-                                            true,
-                                            mMaxDataPoints);
-                                    mSensorGraph.onDataChanged(true,
-                                            true);
-                                }
-                            });
-                        } catch (NullPointerException e) {
-                            break;
-                        }
-                    }
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
+                }
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                /* make sure to close socket */
+                try {
+                    sock.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    /* make sure to close socket */
-                    try {
-                        sock.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         });
@@ -190,24 +190,27 @@ public class HistoryActivity extends Activity {
         vp_sensor.setMaxX(1000);
 
         /* set Y range according to selected sensor */
-        if (mSensor.equals("temp")) {
-            vp_sensor.setMinY(0);
-            vp_sensor.setMaxY(50);
-        } else if (mSensor.equals("humi")) {
-            vp_sensor.setMinY(0);
-            vp_sensor.setMaxY(100);
-        } else if (mSensor.equals("photo")) {
-            vp_sensor.setMinY(0);
-            vp_sensor.setMaxY(2000);
-        } else if (mSensor.equals("magnet")) {
-            vp_sensor.setMinY(0);
-            vp_sensor.setMaxY(1);
-        } else if (mSensor.equals("moisture")) {
-            vp_sensor.setMinY(0);
-            vp_sensor.setMaxY(1);
+        switch (mSensor) {
+            case "temp":
+                vp_sensor.setMinY(0);
+                vp_sensor.setMaxY(50);
+                break;
+            case "humi":
+                vp_sensor.setMinY(0);
+                vp_sensor.setMaxY(100);
+                break;
+            case "photo":
+                vp_sensor.setMinY(0);
+                vp_sensor.setMaxY(2000);
+                break;
+            case "magnet":
+            case "moisture":
+                vp_sensor.setMinY(0);
+                vp_sensor.setMaxY(1);
+                break;
         }
 
-        mSensorSeries = new LineGraphSeries<DataPoint>();
+        mSensorSeries = new LineGraphSeries<>();
         mSensorGraph.addSeries(mSensorSeries);
 
         /* set color of graph */

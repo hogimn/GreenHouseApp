@@ -71,91 +71,83 @@ public class CameraFragment extends Fragment {
 
     private void asyncGetCameraDataAndUpdateUI() {
 
-        mCareraThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                OutputStream os;
-                InputStream is;
-                byte[] sendBytes;
-                byte[] receivedBytes;
-                int[] receivedInts;
-                int bytesRead;
-                int j;
+        mCareraThread = new Thread(() -> {
+            OutputStream os;
+            InputStream is;
+            byte[] sendBytes;
+            byte[] receivedBytes;
+            int[] receivedInts;
+            int bytesRead;
+            int j;
 
-                Socket sock = new Socket();
+            Socket sock = new Socket();
 
-                try {
-                    /* connect to server */
-                    sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
-                                    NetworkUtil.NETWORK_SERVER_PORT),
-                            1000);
+            try {
+                /* connect to server */
+                sock.connect(new InetSocketAddress(NetworkUtil.NETWORK_SERVER_IP,
+                                NetworkUtil.NETWORK_SERVER_PORT),
+                        1000);
 
-                    /* send command */
-                    os = sock.getOutputStream();
-                    sendBytes = NetworkUtil.NETWORK_CMD_CAMERA_SERVER_TO_CLIENT.getBytes();
-                    os.write(sendBytes, 0, sendBytes.length);
-                    os.flush();
+                /* send command */
+                os = sock.getOutputStream();
+                sendBytes = NetworkUtil.NETWORK_CMD_CAMERA_SERVER_TO_CLIENT.getBytes();
+                os.write(sendBytes, 0, sendBytes.length);
+                os.flush();
 
-                    receivedBytes = new byte[WIDTH*HEIGHT*3];
-                    receivedInts = new int[WIDTH*HEIGHT*3];
+                receivedBytes = new byte[WIDTH*HEIGHT*3];
+                receivedInts = new int[WIDTH*HEIGHT*3];
 
-                    /* receive RGB unsigned data from server */
-                    while (mActivity != null)
-                    {
-                        bytesRead = 0;
+                /* receive RGB unsigned data from server */
+                while (mActivity != null)
+                {
+                    bytesRead = 0;
 
-                        is = sock.getInputStream();
+                    is = sock.getInputStream();
 
-                        /**
-                         * There is no "unsigned" type in JAVA.
-                         * If you want to deal with unsigned data type,
-                         * you should be careful about signed expansion.
-                         * To prevent signed expansion, and(&) operation will be useful.
-                         */
-                        while (bytesRead < WIDTH*HEIGHT*3) {
-                            bytesRead += is.read(receivedBytes, bytesRead, WIDTH*HEIGHT*3-bytesRead);
-                        }
-                        for (int i = 0; i < WIDTH*HEIGHT*3; i++) {
-                            /* prevent signed expansion */
-                            receivedInts[i] = receivedBytes[i] & 0xff;
-                        }
+                    /**
+                     * There is no "unsigned" type in JAVA.
+                     * If you want to deal with unsigned data type,
+                     * you should be careful about signed expansion.
+                     * To prevent signed expansion, and(&) operation will be useful.
+                     */
+                    while (bytesRead < WIDTH*HEIGHT*3) {
+                        bytesRead += is.read(receivedBytes, bytesRead, WIDTH*HEIGHT*3-bytesRead);
+                    }
+                    for (int i = 0; i < WIDTH*HEIGHT*3; i++) {
+                        /* prevent signed expansion */
+                        receivedInts[i] = receivedBytes[i] & 0xff;
+                    }
 
-                        /* make a RGB_565 type of bitmap from received RGB data */
-                        mBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.RGB_565);
+                    /* make a RGB_565 type of bitmap from received RGB data */
+                    mBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.RGB_565);
 
-                        j = 0;
-                        for (int y = 0; y < HEIGHT; y++) {
-                            for (int x = 0; x < WIDTH; x++) {
-                                mBitmap.setPixel(x, y, Color.rgb(receivedInts[3*j],
-                                        receivedInts[3*j+1],
-                                        receivedInts[3*j+2]));
-                                j++;
-                            }
-                        }
-
-                        /* update UI */
-                        try {
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    cameraView.setImageBitmap(mBitmap);
-                                }
-                            });
-                        } catch (NullPointerException e) {
-                            break;
+                    j = 0;
+                    for (int y = 0; y < HEIGHT; y++) {
+                        for (int x = 0; x < WIDTH; x++) {
+                            mBitmap.setPixel(x, y, Color.rgb(receivedInts[3*j],
+                                    receivedInts[3*j+1],
+                                    receivedInts[3*j+2]));
+                            j++;
                         }
                     }
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
+
+                    /* update UI */
+                    try {
+                        mActivity.runOnUiThread(() ->
+                                cameraView.setImageBitmap(mBitmap));
+                    } catch (NullPointerException e) {
+                        break;
+                    }
+                }
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    sock.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    try {
-                        sock.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         });

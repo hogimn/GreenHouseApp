@@ -2,7 +2,6 @@ package com.mds.smartcontroller.fragments;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -10,7 +9,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -37,10 +35,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
-import static android.widget.AdapterView.OnClickListener;
-import static android.widget.AdapterView.OnItemClickListener;
-import static android.widget.AdapterView.OnItemLongClickListener;
 
 public class MusicFragment extends ListFragment {
 
@@ -119,110 +113,80 @@ public class MusicFragment extends ListFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        getListView().setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        getListView().setOnItemClickListener((parent, view, position, id) -> {
 
-                /* extract selected musicItem in the ListView */
-                MusicItem musicItem = (MusicItem) parent
-                        .getAdapter()
-                        .getItem(position);
+            /* extract selected musicItem in the ListView */
+            MusicItem musicItem = (MusicItem) parent
+                    .getAdapter()
+                    .getItem(position);
 
-                /* get selected music title */
-                String fileName = musicItem.getTitle();
+            /* get selected music title */
+            String fileName = musicItem.getTitle();
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
+            new Thread(() -> {
 
-                        /* play selected music */
-                        playMusic(fileName);
+                /* play selected music */
+                playMusic(fileName);
 
-                        /* update "playing" state on the "@layout/musiclist_item.xml" */
-                        updatePlayingState(musicItem);
+                /* update "playing" state on the "@layout/musiclist_item.xml" */
+                updatePlayingState(musicItem);
 
-                        /* update UI */
-                        mActivity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mArrayAdaper.notifyDataSetChanged();
-                            }
-                        });
-                    }
-                }).start();
-            }
+                /* update UI */
+                mActivity.runOnUiThread(() ->
+                        mArrayAdaper.notifyDataSetChanged());
+            }).start();
         });
 
         /**
          * if user clicks a item in ListView long enough
          * delete the selected file from the server
          */
-        getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent,
-                                           View view,
-                                           int position,
-                                           long id) {
+        getListView().setOnItemLongClickListener((parent, view, position, id) -> {
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setMessage("Delete file?");
-                builder.setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setMessage("Delete file?");
+            /* if OK clicked */
+            builder.setPositiveButton("OK",
+                    (dialog, which) -> {
 
-                            /* if OK clicked */
-                            public void onClick(DialogInterface dialog, int which) {
+                        /* extract selected musicItem */
+                        MusicItem musicItem = (MusicItem) parent
+                                .getAdapter()
+                                .getItem(position);
 
-                                /* extract selected musicItem */
-                                MusicItem musicItem = (MusicItem) parent
-                                        .getAdapter()
-                                        .getItem(position);
+                        /* get the title of the selected music Item */
+                        String fileName = musicItem.getTitle();
 
-                                /* get the title of the selected music Item */
-                                String fileName = musicItem.getTitle();
+                        new Thread(() -> {
 
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
+                            /* delete file from the server */
+                            deleteFile(fileName);
 
-                                        /* delete file from the server */
-                                        deleteFile(fileName);
-
-                                        /* sleep 500ms to reopen socket successfully */
-                                        try {
-                                            Thread.sleep(500);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                        /* get updated music list from the server */
-                                        getMusicList();
-
-                                        /* update UI */
-                                        mActivity.runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                mArrayAdaper.notifyDataSetChanged();
-                                            }
-                                        });
-                                    }
-                                }).start();
+                            /* sleep 500ms to reopen socket successfully */
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
 
-                builder.setNegativeButton("Cancle",
+                            /* get updated music list from the server */
+                            getMusicList();
 
-                        /* Cancle clicked */
-                        new DialogInterface.OnClickListener() {
+                            /* update UI */
+                            mActivity.runOnUiThread(() ->
+                                    mArrayAdaper.notifyDataSetChanged());
+                        }).start();
+                    });
 
-                            public void onClick(DialogInterface dialog, int which) {
-                                /* nothing will happen */
-                            }
-                        });
+            builder.setNegativeButton("Cancle",
+                    /* Cancle clicked */
+                    (dialog, which) -> {
+                        /* nothing will happen */
+                    });
 
-                builder.show();
+            builder.show();
 
-                return true;
-            }
+            return true;
         });
     }
 
@@ -279,76 +243,54 @@ public class MusicFragment extends ListFragment {
         mTVSelectedFilePath = v.findViewById(R.id.tv_selected_file);
 
         /* open file explorer where user can select only audio type file */
-        mBtnChooseFile.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        mBtnChooseFile.setOnClickListener(__ -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 
-                /* filter only mp3 files */
-                intent.setType("audio/*");
+            /* filter only mp3 files */
+            intent.setType("audio/*");
 
-                /**
-                 * start activity with request code CHOOSE_AUDIO_FILE
-                 * onActivityResult hook method will be called
-                 * when started activity exits
-                 */
-                startActivityForResult(intent, CHOOSE_AUDIO_FILE);
-            }
+            /**
+             * start activity with request code CHOOSE_AUDIO_FILE
+             * onActivityResult hook method will be called
+             * when started activity exits
+             */
+            startActivityForResult(intent, CHOOSE_AUDIO_FILE);
         });
 
         /**
          * when user click "TRANSFER" button,
          * start to transfer file via socket
          */
-        mBtnFileTransfer.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mBtnFileTransfer.setOnClickListener(__ ->
+                new Thread(() -> {
+                    /* transfer file */
+                    transferFile();
 
-                new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        /* transfer file */
-                        transferFile();
-
-                        /* sleep 500ms to reopen socket successfully */
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        /* get updated music list from server */
-                        Thread updateMusicList = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                getMusicList();
-                            }
-                        });
-
-                        updateMusicList.start();
-                        try {
-                            updateMusicList.join();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        try {
-                            /* update UI */
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    mArrayAdaper.notifyDataSetChanged();
-                                }
-                            });
-                        } catch (NullPointerException e) {
-                            /* ignore */
-                        }
+                    /* sleep 500ms to reopen socket successfully */
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                }).start();
-            }
-        });
+
+                    /* get updated music list from server */
+                    Thread updateMusicList = new Thread(this::getMusicList);
+
+                    updateMusicList.start();
+                    try {
+                        updateMusicList.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        /* update UI */
+                        mActivity.runOnUiThread(() ->
+                                mArrayAdaper.notifyDataSetChanged());
+                    } catch (NullPointerException e) {
+                        /* ignore */
+                    }
+                }).start());
     }
 
     @Override

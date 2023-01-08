@@ -3,11 +3,9 @@ package com.mds.smartcontroller.utils;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -35,7 +33,7 @@ public class PermissionRequest {
     /**
      * Generic permission code used by this class.
      */
-    private static AtomicInteger mRequestId = new AtomicInteger(0);
+    private static final AtomicInteger mRequestId = new AtomicInteger(0);
 
     private final Activity mActivity;
     private final ViewGroup mLayout;
@@ -206,9 +204,9 @@ public class PermissionRequest {
         // behaviour and apps should design and set their own meaningful
         // rationales.
         if (mRationaleId == R.string.permission_rationale) {
-            String permissionStrings = "";
+            StringBuilder permissionStrings = new StringBuilder();
             for (final String permission : mPermissions) {
-                permissionStrings += "\n" + permission;
+                permissionStrings.append("\n").append(permission);
             }
 
             msg = String.format(
@@ -228,13 +226,10 @@ public class PermissionRequest {
 
             snackbar.setAction(
                     R.string.permissions_ok_button,
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            /// Submit the request.
-                            ActivityCompat.requestPermissions(
-                                    mActivity, mPermissions, mRequestCode);
-                        }
+                    __ -> {
+                        /// Submit the request.
+                        ActivityCompat.requestPermissions(
+                                mActivity, mPermissions, mRequestCode);
                     });
 
             snackbar.show();
@@ -250,12 +245,10 @@ public class PermissionRequest {
             alertDialogBuilder.setCancelable(true);
             alertDialogBuilder.setPositiveButton(
                     R.string.permissions_ok_button,
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            /// Submit the request.
-                            ActivityCompat.requestPermissions(
-                                    mActivity, mPermissions, mRequestCode);
-                        }
+                    (dialog, id) -> {
+                        /// Submit the request.
+                        ActivityCompat.requestPermissions(
+                                mActivity, mPermissions, mRequestCode);
                     });
 
             // Create alert dialog.

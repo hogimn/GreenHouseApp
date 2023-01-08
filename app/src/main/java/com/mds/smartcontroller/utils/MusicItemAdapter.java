@@ -17,9 +17,9 @@ import java.util.ArrayList;
 
 public class MusicItemAdapter extends ArrayAdapter<MusicItem> {
 
-    private LayoutInflater inflater;
-    private Fragment fragment;
-    private Context context;
+    private final LayoutInflater inflater;
+    private final Fragment fragment;
+    private final Context context;
 
     public MusicItemAdapter(Context context,
                             ArrayList<MusicItem> items,
@@ -40,7 +40,7 @@ public class MusicItemAdapter extends ArrayAdapter<MusicItem> {
         boolean status = musicItem.getPlayOrStop();
 
         if (convertView == null) {
-            convertView = inflater.from(context)
+            convertView = LayoutInflater.from(context)
                     .inflate(R.layout.musiclist_item, parent, false);
         }
 
