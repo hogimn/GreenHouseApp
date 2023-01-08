@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -214,7 +216,10 @@ public class MusicFragment extends ListFragment {
              * onActivityResult hook method will be called
              * when started activity exits
              */
-            startActivityForResult(intent, CHOOSE_AUDIO_FILE);
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> onActivityResult(CHOOSE_AUDIO_FILE, result))
+                    .launch(intent);
         });
 
         /**
@@ -253,14 +258,12 @@ public class MusicFragment extends ListFragment {
                 }).start());
     }
 
-    @Override
     public void onActivityResult(int requestCode,
-                                 int resultCode,
-                                 @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CHOOSE_AUDIO_FILE && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                mUriSelectedFilePath = data.getData();
+                                 ActivityResult result) {
+        if (requestCode == CHOOSE_AUDIO_FILE &&
+                result.getResultCode() == Activity.RESULT_OK) {
+            if (result.getData() != null) {
+                mUriSelectedFilePath = result.getData().getData();
                 /* uri path will be converted to real path */
                 String mRealPath = RealPathUtil.getRealPath(getContext(), mUriSelectedFilePath);
                 binding.tvSelectedFile.setText(String.format("File Path: %s", mRealPath));
