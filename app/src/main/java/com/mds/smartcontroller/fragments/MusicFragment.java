@@ -1,7 +1,6 @@
 package com.mds.smartcontroller.fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -9,15 +8,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.ListFragment;
 
-import com.mds.smartcontroller.R;
+import com.mds.smartcontroller.databinding.FragmentMusicBinding;
 import com.mds.smartcontroller.utils.MusicItem;
 import com.mds.smartcontroller.utils.MusicItemAdapter;
 import com.mds.smartcontroller.utils.NetworkUtil;
@@ -33,19 +30,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class MusicFragment extends ListFragment {
-
-    /* button to select mp3 file to transfer */
-    private Button mBtnChooseFile;
-
-    /* button to start transferring mp3 file */
-    private Button mBtnFileTransfer;
-
-    /* textview to show real path to the selected file */
-    private TextView mTVSelectedFilePath;
 
     /**
      *  request code for startActivityForResult
@@ -62,12 +49,6 @@ public class MusicFragment extends ListFragment {
      */
     private Uri mUriSelectedFilePath = null;
 
-    /* uri path will be converted to real path */
-    private String mRealPath = null;
-
-    /* async task to get music list from server */
-    private AsyncTask<Void, Void, Void> mAsyncTask;
-
     /* array adapter for ListView of music list */
     private MusicItemAdapter mArrayAdaper;
 
@@ -77,36 +58,19 @@ public class MusicFragment extends ListFragment {
     /* currently playing music */
     private MusicItem currentMusic;
 
-    /* Activity where the fragment belongs to */
-    private Activity mActivity;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        mActivity = getActivity();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mActivity = null;
-    }
+    private FragmentMusicBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_music, container, false);
-
-        initializeDynamicObject();
-
-        initializeView(v);
-
+        binding = FragmentMusicBinding.inflate(inflater, container, false);
+        initializeFields();
+        setUpListener();
         asyncGetMusicList();
-
         setListAdapter(mArrayAdaper);
-        return v;
+        return binding.getRoot();
     }
 
     @Override
@@ -132,7 +96,7 @@ public class MusicFragment extends ListFragment {
                 updatePlayingState(musicItem);
 
                 /* update UI */
-                mActivity.runOnUiThread(() ->
+                requireActivity().runOnUiThread(() ->
                         mArrayAdaper.notifyDataSetChanged());
             }).start();
         });
@@ -173,7 +137,7 @@ public class MusicFragment extends ListFragment {
                             getMusicList();
 
                             /* update UI */
-                            mActivity.runOnUiThread(() ->
+                            requireActivity().runOnUiThread(() ->
                                     mArrayAdaper.notifyDataSetChanged());
                         }).start();
                     });
@@ -228,7 +192,7 @@ public class MusicFragment extends ListFragment {
         }
     }
 
-    private void initializeDynamicObject()
+    private void initializeFields()
     {
         mMusicItemList = new ArrayList<>();
         mArrayAdaper = new MusicItemAdapter(getContext(),
@@ -236,14 +200,10 @@ public class MusicFragment extends ListFragment {
                 MusicFragment.this);
     }
 
-    private void initializeView(View v)
+    private void setUpListener()
     {
-        mBtnChooseFile = v.findViewById(R.id.btn_filechooser);
-        mBtnFileTransfer = v.findViewById(R.id.btn_filetransfer);
-        mTVSelectedFilePath = v.findViewById(R.id.tv_selected_file);
-
         /* open file explorer where user can select only audio type file */
-        mBtnChooseFile.setOnClickListener(__ -> {
+        binding.btnFilechooser.setOnClickListener(__ -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 
             /* filter only mp3 files */
@@ -261,7 +221,7 @@ public class MusicFragment extends ListFragment {
          * when user click "TRANSFER" button,
          * start to transfer file via socket
          */
-        mBtnFileTransfer.setOnClickListener(__ ->
+        binding.btnFiletransfer.setOnClickListener(__ ->
                 new Thread(() -> {
                     /* transfer file */
                     transferFile();
@@ -285,7 +245,7 @@ public class MusicFragment extends ListFragment {
 
                     try {
                         /* update UI */
-                        mActivity.runOnUiThread(() ->
+                        requireActivity().runOnUiThread(() ->
                                 mArrayAdaper.notifyDataSetChanged());
                     } catch (NullPointerException e) {
                         /* ignore */
@@ -301,14 +261,18 @@ public class MusicFragment extends ListFragment {
         if (requestCode == CHOOSE_AUDIO_FILE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 mUriSelectedFilePath = data.getData();
-                mRealPath = RealPathUtil.getRealPath(getContext(), mUriSelectedFilePath);
-                mTVSelectedFilePath.setText(String.format("File Path: %s", mRealPath));
+                /* uri path will be converted to real path */
+                String mRealPath = RealPathUtil.getRealPath(getContext(), mUriSelectedFilePath);
+                binding.tvSelectedFile.setText(String.format("File Path: %s", mRealPath));
             }
         }
     }
 
     private void asyncGetMusicList() {
-        mAsyncTask = new AsyncTask<Void, Void, Void>() {
+        /* starts background thread to get a list of musics from client via socket */
+        /* update UI */
+        /* async task to get music list from server */
+        AsyncTask<Void, Void, Void> mAsyncTask = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
                 /* starts background thread to get a list of musics from client via socket */
@@ -357,10 +321,6 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -404,10 +364,6 @@ public class MusicFragment extends ListFragment {
 
             sock.close();
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -485,10 +441,6 @@ public class MusicFragment extends ListFragment {
                 }
             }
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -576,10 +528,6 @@ public class MusicFragment extends ListFragment {
             os.write(sendBytes, 0, sendBytes.length);
             os.flush();
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

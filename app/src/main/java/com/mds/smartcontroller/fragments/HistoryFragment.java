@@ -1,7 +1,5 @@
 package com.mds.smartcontroller.fragments;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,9 +28,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class HistoryFragment extends Fragment {
+
     /* LineGraphSeries to record each sensor data */
     private LineGraphSeries<DataPoint> mTempSeries;
     private LineGraphSeries<DataPoint> mHumiSeries;
@@ -57,9 +55,6 @@ public class HistoryFragment extends Fragment {
     /* thread to get sensor data from server */
     private Thread mThreadSensor;
 
-    /* current Activity where the fragment belongs to */
-    private Activity mActivity;
-
     private final int WHITE = Color.rgb(255,255,255);
 
     @Nullable
@@ -72,18 +67,6 @@ public class HistoryFragment extends Fragment {
         initializeView(v);
         asyncGetSensorData();
         return v;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        mActivity = getActivity();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mActivity = null;
     }
 
     private void asyncGetSensorData() {
@@ -112,7 +95,7 @@ public class HistoryFragment extends Fragment {
                 /* receive temparature (2byte) / humid sensor (2byte) data */
                 is = sock.getInputStream();
                 br = new BufferedReader(new InputStreamReader(is));
-                while (mActivity != null) {
+                while (getActivity() != null) {
 
                     try {
                     /* receive sensor data */
@@ -123,7 +106,7 @@ public class HistoryFragment extends Fragment {
                     int moisture = Integer.parseInt(br.readLine());
 
                     /* update UI */
-                        mActivity.runOnUiThread(() -> {
+                        getActivity().runOnUiThread(() -> {
                             mHumiSeries.appendData(new DataPoint(mHumiLastX++,
                                             humi),
                                     true,
@@ -156,14 +139,10 @@ public class HistoryFragment extends Fragment {
                             mMoistureGraph.onDataChanged(true,
                                     true);
                         });
-                    } catch (NullPointerException e) {
-                        break;
-                    } catch (NumberFormatException e) {
+                    } catch (NullPointerException | NumberFormatException e) {
                         break;
                     }
                 }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -187,11 +166,11 @@ public class HistoryFragment extends Fragment {
         GridLabelRenderer magnetGridLabelRenderer;
         GridLabelRenderer moistureGridLabelRenderer;
 
-        mTempGraph = new GraphView(mActivity);
-        mHumiGraph = new GraphView(mActivity);
-        mPhotoGraph = new GraphView(mActivity);
-        mMagnetGraph = new GraphView(mActivity);
-        mMoistureGraph = new GraphView(mActivity);
+        mTempGraph = new GraphView(getActivity());
+        mHumiGraph = new GraphView(getActivity());
+        mPhotoGraph = new GraphView(getActivity());
+        mMagnetGraph = new GraphView(getActivity());
+        mMoistureGraph = new GraphView(getActivity());
 
         mTempGraph.setTitle("Temparature");
         mTempGraph.setHorizontalScrollBarEnabled(true);

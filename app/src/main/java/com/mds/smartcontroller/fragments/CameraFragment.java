@@ -1,20 +1,17 @@
 package com.mds.smartcontroller.fragments;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.mds.smartcontroller.R;
+import com.mds.smartcontroller.databinding.FragmentCameraBinding;
 import com.mds.smartcontroller.utils.NetworkUtil;
 
 import java.io.IOException;
@@ -22,37 +19,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class CameraFragment extends Fragment {
-
-    /* thread to get camera data from server */
-    private Thread mCareraThread;
-
-    /* current Activity where CameraFragment belongs to */
-    private Activity mActivity;
-
-    /* RGB data -> Bitmap (RGB_565) -> ImageView */
-    private Bitmap mBitmap;
-
-    /* ImageView to show streaming camera data */
-    private ImageView cameraView;
 
     /* Logitech C270 Specific */
     private final int HEIGHT = 144;
     private final int WIDTH = 176;
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        mActivity = getActivity();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mActivity = null;
-    }
+    private FragmentCameraBinding binding;
 
     @Nullable
     @Override
@@ -60,18 +34,27 @@ public class CameraFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.fragment_camera, container, false);
-
-        cameraView = v.findViewById(R.id.camera_view);
-
+        binding = FragmentCameraBinding.inflate(inflater, container, false);
         asyncGetCameraDataAndUpdateUI();
-
-        return v;
+        return binding.getRoot();
     }
 
     private void asyncGetCameraDataAndUpdateUI() {
 
-        mCareraThread = new Thread(() -> {
+        /* connect to server */
+        /* send command */
+        /* receive RGB unsigned data from server */
+        /**
+         * There is no "unsigned" type in JAVA.
+         * If you want to deal with unsigned data type,
+         * you should be careful about signed expansion.
+         * To prevent signed expansion, and(&) operation will be useful.
+         */
+        /* prevent signed expansion */
+        /* make a RGB_565 type of bitmap from received RGB data */
+        /* update UI */
+        /* thread to get camera data from server */
+        Thread mCareraThread = new Thread(() -> {
             OutputStream os;
             InputStream is;
             byte[] sendBytes;
@@ -94,12 +77,11 @@ public class CameraFragment extends Fragment {
                 os.write(sendBytes, 0, sendBytes.length);
                 os.flush();
 
-                receivedBytes = new byte[WIDTH*HEIGHT*3];
-                receivedInts = new int[WIDTH*HEIGHT*3];
+                receivedBytes = new byte[WIDTH * HEIGHT * 3];
+                receivedInts = new int[WIDTH * HEIGHT * 3];
 
                 /* receive RGB unsigned data from server */
-                while (mActivity != null)
-                {
+                while (getActivity() != null) {
                     bytesRead = 0;
 
                     is = sock.getInputStream();
@@ -110,37 +92,36 @@ public class CameraFragment extends Fragment {
                      * you should be careful about signed expansion.
                      * To prevent signed expansion, and(&) operation will be useful.
                      */
-                    while (bytesRead < WIDTH*HEIGHT*3) {
-                        bytesRead += is.read(receivedBytes, bytesRead, WIDTH*HEIGHT*3-bytesRead);
+                    while (bytesRead < WIDTH * HEIGHT * 3) {
+                        bytesRead += is.read(receivedBytes, bytesRead, WIDTH * HEIGHT * 3 - bytesRead);
                     }
-                    for (int i = 0; i < WIDTH*HEIGHT*3; i++) {
+                    for (int i = 0; i < WIDTH * HEIGHT * 3; i++) {
                         /* prevent signed expansion */
                         receivedInts[i] = receivedBytes[i] & 0xff;
                     }
 
+                    /* RGB data -> Bitmap (RGB_565) -> ImageView */
                     /* make a RGB_565 type of bitmap from received RGB data */
-                    mBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.RGB_565);
+                    Bitmap mBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.RGB_565);
 
                     j = 0;
                     for (int y = 0; y < HEIGHT; y++) {
                         for (int x = 0; x < WIDTH; x++) {
-                            mBitmap.setPixel(x, y, Color.rgb(receivedInts[3*j],
-                                    receivedInts[3*j+1],
-                                    receivedInts[3*j+2]));
+                            mBitmap.setPixel(x, y, Color.rgb(receivedInts[3 * j],
+                                    receivedInts[3 * j + 1],
+                                    receivedInts[3 * j + 2]));
                             j++;
                         }
                     }
 
                     /* update UI */
                     try {
-                        mActivity.runOnUiThread(() ->
-                                cameraView.setImageBitmap(mBitmap));
+                        getActivity().runOnUiThread(() ->
+                                binding.cameraView.setImageBitmap(mBitmap));
                     } catch (NullPointerException e) {
                         break;
                     }
                 }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {

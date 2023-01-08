@@ -1,23 +1,17 @@
 package com.mds.smartcontroller.fragments;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.mds.smartcontroller.R;
+import com.mds.smartcontroller.databinding.FragmentHomeBinding;
 import com.mds.smartcontroller.utils.NetworkUtil;
 
 import java.io.BufferedReader;
@@ -27,46 +21,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class HomeFragment extends Fragment {
 
-    /* Activity where the fragment belongs to */
-    private Activity mActivity;
-
-    /* TextView to show current mode "MANUAL or AUTO" */
-    private TextView mTVMode;
-
-    /* Button to toggle mode */
-    private Button mBtnMode;
-
-    /* CardView to control functional devices */
-    private CardView mCVWater;
-    private CardView mCVDrain;
-    private CardView mCVLED;
-    private CardView mCVFan;
-    private CardView mCVHumidifier;
-    private CardView mCVDryer;
-
-    /* ImageView to show the state in which each device is */
-    private ImageView mIVWater;
-    private ImageView mIVDrain;
-    private ImageView mIVLED;
-    private ImageView mIVFan;
-    private ImageView mIVHumidifier;
-    private ImageView mIVDryer;
-
-    /* EditText to represent boundary data */
-    private EditText mETHumidifier;
-    private EditText mETFan;
-    private EditText mETDryer;
-    private EditText mETCooler;
-    private EditText mETLED;
-
-    /* button to update boundary data */
-    private Button mBtnBoundaryUpdate;
-
-    /* current mode */
     private int mCurrentMode;
 
     /* mode AUTO/MANUAL */
@@ -96,70 +53,28 @@ public class HomeFragment extends Fragment {
     private volatile int mStateHumidifier;
     private volatile int mStateDryer;
 
-    private final String TAG = getClass().getName();
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        mActivity = getActivity();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mActivity = null;
-    }
+    private FragmentHomeBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_home, container, false);
-
-        initializeView(v);
-
+        binding = FragmentHomeBinding.inflate(inflater, container, false);
+        setUpListener();
         asyncGetMode();
-
         asyncGetStates();
-
         asyncGetBoundary();
-
-        return v;
+        return binding.getRoot();
     }
 
-    private void initializeView(View v)
+    private void setUpListener()
     {
-        mTVMode = v.findViewById(R.id.tv_mode);
-
-        mBtnMode = v.findViewById(R.id.btn_mode);
-
-        mCVWater = v.findViewById(R.id.cv_water);
-        mCVDrain = v.findViewById(R.id.cv_drain);
-        mCVLED = v.findViewById(R.id.cv_led);
-        mCVFan = v.findViewById(R.id.cv_fan);
-        mCVHumidifier = v.findViewById(R.id.cv_humidifier);
-        mCVDryer = v.findViewById(R.id.cv_dryer);
-
-        mIVWater = v.findViewById(R.id.iv_water);
-        mIVDrain = v.findViewById(R.id.iv_drain);
-        mIVLED = v.findViewById(R.id.iv_led);
-        mIVFan = v.findViewById(R.id.iv_fan);
-        mIVHumidifier = v.findViewById(R.id.iv_humidifier);
-        mIVDryer = v.findViewById(R.id.iv_dryer);
-
-        mETHumidifier = v.findViewById(R.id.et_boundary_humidifier);
-        mETFan = v.findViewById(R.id.et_boundary_fan);
-        mETDryer = v.findViewById(R.id.et_boundary_dryer);
-        mETCooler = v.findViewById(R.id.et_boundary_cooler);
-        mETLED = v.findViewById(R.id.et_boundary_led);
-
-        mBtnBoundaryUpdate = v.findViewById(R.id.btn_boundary_update);
-
         /* when user clicks button, mode is toggled */
-        mBtnMode.setOnClickListener(__ -> asyncToggleMode());
+        binding.btnMode.setOnClickListener(__ ->
+                asyncToggleMode());
 
-        mCVWater.setOnClickListener(__ -> {
+        binding.cvWater.setOnClickListener(__ -> {
             if (mStateSolenoid == STATE_SOLENOID_OPEN) {
                 asyncChangeState(STATE_SOLENOID_CLOSE);
             } else if (mStateSolenoid == STATE_SOLENOID_CLOSE) {
@@ -167,7 +82,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        mCVDrain.setOnClickListener(__ -> {
+        binding.cvDrain.setOnClickListener(__ -> {
             if (mStateDrain == STATE_DRAIN_OPEN) {
                 asyncChangeState(STATE_DRAIN_CLOSE);
             } else if (mStateDrain == STATE_DRAIN_CLOSE) {
@@ -175,7 +90,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        mCVLED.setOnClickListener(__ -> {
+        binding.cvLed.setOnClickListener(__ -> {
             if (mStateLED == STATE_LED_ON) {
                 asyncChangeState(STATE_LED_OFF);
             } else if (mStateLED == STATE_LED_OFF) {
@@ -183,7 +98,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        mCVFan.setOnClickListener(__ -> {
+        binding.cvFan.setOnClickListener(__ -> {
             if (mStateFan == STATE_FAN_ON || mStateFan == STATE_FAN_VERY_FAST) {
                 asyncChangeState(STATE_FAN_OFF);
             } else if (mStateFan == STATE_FAN_OFF) {
@@ -191,7 +106,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        mCVHumidifier.setOnClickListener(__ -> {
+        binding.cvHumidifier.setOnClickListener(__ -> {
             if (mStateHumidifier == STATE_HUMIDIFIER_ON) {
                 asyncChangeState(STATE_HUMIDIFIER_OFF);
             }
@@ -200,7 +115,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        mCVDryer.setOnClickListener(__ -> {
+        binding.cvDryer.setOnClickListener(__ -> {
             if (mStateDryer == STATE_DRYER_ON) {
                 asyncChangeState(STATE_DRYER_OFF);
             }
@@ -209,7 +124,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        mBtnBoundaryUpdate.setOnClickListener(__ ->
+        binding.btnBoundaryUpdate.setOnClickListener(__ ->
                 asyncUpdateBoundaryData());
     }
 
@@ -237,20 +152,16 @@ public class HomeFragment extends Fragment {
                 Thread.sleep(500);
 
                 /* send boundary data to update */
-                sendString = mETHumidifier.getText()+"\n"+
-                        mETFan.getText()+"\n"+
-                        mETDryer.getText()+"\n"+
-                        mETCooler.getText()+"\n"+
-                        mETLED.getText();
+                sendString = binding.etBoundaryHumidifier.getText()+"\n"+
+                        binding.etBoundaryFan.getText()+"\n"+
+                        binding.etBoundaryDryer.getText()+"\n"+
+                        binding.etBoundaryCooler.getText()+"\n"+
+                        binding.etBoundaryLed.getText();
                 sendBytes = sendString.getBytes();
                 os.write(sendBytes, 0, sendBytes.length);
                 os.flush();
 
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             } finally {
                 /* make sure to close socket */
@@ -293,11 +204,7 @@ public class HomeFragment extends Fragment {
                 os.write(sendBytes, 0, sendBytes.length);
                 os.flush();
 
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             } finally {
                 /* make sure to close socket */
@@ -338,7 +245,7 @@ public class HomeFragment extends Fragment {
                 /* receive states data */
                 is = sock.getInputStream();
                 br = new BufferedReader(new InputStreamReader(is));
-                while (mActivity != null) {
+                while (getActivity() != null) {
                     try {
                         int StateLED = Integer.parseInt(br.readLine());
                         int StateFan = Integer.parseInt(br.readLine());
@@ -348,106 +255,101 @@ public class HomeFragment extends Fragment {
                         int StateDryer = Integer.parseInt(br.readLine());
 
                         /* update UI */
-                        mActivity.runOnUiThread(() -> {
+                        getActivity().runOnUiThread(() -> {
                             if (StateLED == STATE_LED_ON) {
-                                mCVLED.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvLed.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVLED.setImageResource(R.drawable.active_bolb);
-
+                                binding.ivLed.setImageResource(R.drawable.active_bolb);
                                 mStateLED = STATE_LED_ON;
                             } else if (StateLED == STATE_LED_OFF) {
-                                mCVLED.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvLed.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_deactive));
-                                mIVLED.setImageResource(R.drawable.bolb);
-
+                                binding.ivLed.setImageResource(R.drawable.bolb);
                                 mStateLED = STATE_LED_OFF;
                             }
 
                             if (StateFan == STATE_FAN_ON) {
-                                mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvFan.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVFan.setImageResource(R.drawable.active_fan);
-
+                                binding.ivFan.setImageResource(R.drawable.active_fan);
                                 mStateFan = STATE_FAN_ON;
                             } else if (StateFan == STATE_FAN_VERY_FAST) {
-                                mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvFan.setCardBackgroundColor(ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVFan.setImageResource(R.drawable.active_fan);
-
+                                binding.ivFan.setImageResource(R.drawable.active_fan);
                                 mStateFan = STATE_FAN_VERY_FAST;
                             }
                             else if (StateFan == STATE_FAN_OFF) {
-                                mCVFan.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvFan.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_deactive));
-                                mIVFan.setImageResource(R.drawable.fan);
-
+                                binding.ivFan.setImageResource(R.drawable.fan);
                                 mStateFan = STATE_FAN_OFF;
                             }
 
                             if (StateSolenoid == STATE_SOLENOID_OPEN) {
-                                mCVWater.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvWater.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVWater.setImageResource(R.drawable.active_droplet);
-
+                                binding.ivWater.setImageResource(R.drawable.active_droplet);
                                 mStateSolenoid = STATE_SOLENOID_OPEN;
                             } else if (StateSolenoid == STATE_SOLENOID_CLOSE) {
-                                mCVWater.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvWater.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_deactive));
-                                mIVWater.setImageResource(R.drawable.droplet);
-
+                                binding.ivWater.setImageResource(R.drawable.droplet);
                                 mStateSolenoid = STATE_SOLENOID_CLOSE;
                             }
 
                             if (StateDrain == STATE_DRAIN_OPEN) {
-                                mCVDrain.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvDrain.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVDrain.setImageResource(R.drawable.active_drainage);
-
+                                binding.ivDrain.setImageResource(R.drawable.active_drainage);
                                 mStateDrain = STATE_DRAIN_OPEN;
                             } else if (StateDrain == STATE_DRAIN_CLOSE) {
-                                mCVDrain.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvDrain.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_deactive));
-                                mIVDrain.setImageResource(R.drawable.drainage);
-
+                                binding.ivDrain.setImageResource(R.drawable.drainage);
                                 mStateDrain = STATE_DRAIN_CLOSE;
                             }
 
                             if (StateHumidifier == STATE_HUMIDIFIER_ON) {
-                                mCVHumidifier.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvHumidifier.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVHumidifier.setImageResource(R.drawable.active_humidifier);
-
+                                binding.ivHumidifier.setImageResource(R.drawable.active_humidifier);
                                 mStateHumidifier = STATE_HUMIDIFIER_ON;
                             } else if (StateHumidifier == STATE_HUMIDIFIER_OFF) {
-                                mCVHumidifier.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvHumidifier.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_deactive));
-                                mIVHumidifier.setImageResource(R.drawable.humidifier);
-
+                                binding.ivHumidifier.setImageResource(R.drawable.humidifier);
                                 mStateHumidifier = STATE_HUMIDIFIER_OFF;
                             }
 
                             if (StateDryer == STATE_DRYER_ON) {
-                                mCVDryer.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvDryer.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_active));
-                                mIVDryer.setImageResource(R.drawable.active_dryer);
-
+                                binding.ivDryer.setImageResource(R.drawable.active_dryer);
                                 mStateDryer = STATE_DRYER_ON;
                             } else if (StateDryer == STATE_DRYER_OFF) {
-                                mCVDryer.setCardBackgroundColor(ContextCompat.getColor(mActivity,
+                                binding.cvDryer.setCardBackgroundColor(
+                                        ContextCompat.getColor(getActivity(),
                                         R.color.card_background_color_deactive));
-                                mIVDryer.setImageResource(R.drawable.dryer);
-
+                                binding.ivDryer.setImageResource(R.drawable.dryer);
                                 mStateDryer = STATE_DRYER_OFF;
                             }
                         });
-                    } catch (NullPointerException e) {
-                        break;
-                    } catch (NumberFormatException e) {
+                    } catch (NullPointerException | NumberFormatException e) {
                         break;
                     }
                 }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -488,7 +390,7 @@ public class HomeFragment extends Fragment {
                 /* receive changed mode data */
                 is = sock.getInputStream();
                 br = new BufferedReader(new InputStreamReader(is));
-                while (mActivity != null) {
+                while (getActivity() != null) {
                     try {
                         int mode = Integer.parseInt(br.readLine());
 
@@ -496,24 +398,20 @@ public class HomeFragment extends Fragment {
                         mCurrentMode = mode;
 
                     /* update UI */
-                        mActivity.runOnUiThread(() -> {
+                        getActivity().runOnUiThread(() -> {
                             if (mode == MODE_AUTO)
                             {
-                                mTVMode.setText("Current Mode is AUTO");
+                                binding.tvMode.setText("Current Mode is AUTO");
                             }
                             else if (mode == MODE_MANUAL)
                             {
-                                mTVMode.setText("Current Mode is MANUAL");
+                                binding.tvMode.setText("Current Mode is MANUAL");
                             }
                         });
-                    } catch (NullPointerException e) {
-                        break;
-                    } catch (NumberFormatException e) {
+                    } catch (NullPointerException | NumberFormatException e) {
                         break;
                     }
                 }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -555,26 +453,22 @@ public class HomeFragment extends Fragment {
                 /* receive mode data */
                 is = sock.getInputStream();
                 br = new BufferedReader(new InputStreamReader(is));
-                while (mActivity != null) {
+                while (getActivity() != null) {
                     try {
                         int mode = Integer.parseInt(br.readLine());
 
                         /* update UI */
-                        mActivity.runOnUiThread(() -> {
+                        getActivity().runOnUiThread(() -> {
                             if (mode == MODE_AUTO) {
-                                mTVMode.setText("Current Mode is AUTO");
+                                binding.tvMode.setText("Current Mode is AUTO");
                             } else if (mode == MODE_MANUAL) {
-                                mTVMode.setText("Current Mode is MANUAL");
+                                binding.tvMode.setText("Current Mode is MANUAL");
                             }
                         });
-                    } catch (NullPointerException e) {
-                        break;
-                    } catch (NumberFormatException e) {
+                    } catch (NullPointerException | NumberFormatException e) {
                         break;
                     }
                 }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -622,15 +516,13 @@ public class HomeFragment extends Fragment {
                 String boundary_led = br.readLine();
 
                 /* update UI */
-                mActivity.runOnUiThread(() -> {
-                    mETHumidifier.setText(boundary_humidifier);
-                    mETFan.setText(boundary_fan);
-                    mETDryer.setText(boundary_dryer);
-                    mETCooler.setText(boundary_cooler);
-                    mETLED.setText(boundary_led);
+                requireActivity().runOnUiThread(() -> {
+                    binding.etBoundaryHumidifier.setText(boundary_humidifier);
+                    binding.etBoundaryFan.setText(boundary_fan);
+                    binding.etBoundaryDryer.setText(boundary_dryer);
+                    binding.etBoundaryCooler.setText(boundary_cooler);
+                    binding.etBoundaryLed.setText(boundary_led);
                 });
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
